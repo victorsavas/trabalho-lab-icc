@@ -38,12 +38,11 @@ int main() {
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 13);  // 60 quadros por segundo
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 10);  // 60 quadros por segundo
 
     // Registra as fontes de eventos que a fila vai monitorar
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer));
-    al_register_event_source(queue, al_get_mouse_event_source());
     al_register_event_source(queue, al_get_keyboard_event_source());
 
     // Carrega uma imagem contendo múltimos sprites (spritesheet)
@@ -53,10 +52,10 @@ int main() {
     // Variáveis de controle da aplicação
     bool falling = true;      // Indica se a aplicação deve continuar executando
     bool redraw = true;       // Indica se a tela precisa ser redesenhada
-    bool hover = false;       // Indica se o mouse está sobre o botão
     ALLEGRO_EVENT ev;         // Estrutura para eventos
 
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
+    int row_to_clear;
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base
         board[i] = 0;
@@ -71,8 +70,8 @@ int main() {
         .board_x = BOARD_COLS/2,
         .board_y = 0,
         .shape = {
-        {0, 1, 1, 0},
-        {0, 1, 1, 0},
+        {1, 1, 0, 0},
+        {1, 1, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0}
         }
@@ -84,7 +83,7 @@ int main() {
 
         al_wait_for_event(queue, &ev);   // Aguarda próximo evento na fila
 
-        remove_piece_board(&current_piece, board);
+        remove_piece_board(&current_piece, board); // corrige o erro de sobreposição das peças
 
         // Tratamento dos eventos recebidos
         switch (ev.type) {
@@ -96,22 +95,31 @@ int main() {
 
                 if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
                     falling = false;
-                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT)
-                    if(current_piece.board_x <= 10 && current_piece.board_x >= 0)
-                    current_piece.board_x -= 1;
-                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT)
-                    if(current_piece.board_x <= 10 && current_piece.board_x >= 0)
-                    current_piece.board_x += 1;
 
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){
+                    current_piece.board_x -= 1;
+                    }
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){
+                    current_piece.board_x += 1;
+                    }
                 break;
 
             case ALLEGRO_EVENT_TIMER:
                 redraw = true; // Marca que a tela precisa ser redesenhada
                 break;
         }
-        if(fall_piece(&current_piece, board) == 1){ // definido em gameloop.c
+
+        correct_piece_onboard(&current_piece); // corrige escape do mapa
+
+        if(fall_piece(&current_piece, board) == 1){ // definido em gameloop.c, faz as peças cairem
+            if(clear_full_rows(&current_piece, board) != 0){  // limpa as linhas cheias
+                remove_piece_board(&current_piece, board);    // resolve problemas causados pela posição da peça
+            }
             current_piece.board_y = 0; // retorna a peça pro topo
+        //  current_piece.board_x = BOARD_COLS/2; // retorna a peça pro centro
         }
+
+
 
         if (redraw && al_is_event_queue_empty(queue)) { // Redesenho da tela
             redraw = false;

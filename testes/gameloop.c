@@ -72,3 +72,56 @@ int fall_piece(t_piece *piece, int *board){     // atualiza a peça e faz a lógic
         return 1;
     }
 }
+
+void correct_piece_onboard(t_piece *piece){ // retorna as peças pra borda do tabuleiro baseado em seus formatos
+
+    for(int i = 0; i < 4; i++){             // pega o formato da peça na matriz 4x4
+        for(int j = 0; j < 4; j++){
+            if(piece->shape[i][j] != 0){
+                if((piece->board_x + j) > 9){
+                    piece->board_x = 9 - j;
+                    return;
+                }
+                else if((piece->board_x + j) < 0){
+                    piece->board_x = 0 - j;
+                    return;
+                }
+            }
+        }
+    }
+}
+
+int clear_full_rows(int *board){
+
+    int row_sum = 0;
+    int flag = 0;
+
+    for(int i=0; i < BOARD_ROWS; i++){
+        for(int j=0; j < BOARD_COLS; j++){
+            if(board[i * BOARD_COLS + j] != 0){
+                row_sum++;
+            }
+        }
+        if(row_sum == BOARD_COLS){
+            for(int j=0; j < BOARD_COLS; j++){
+                board[i * BOARD_COLS + j] = 0;
+            }
+            flag = i;
+        }
+        row_sum = 0;
+    }
+    return flag;
+}
+
+void fall_upper_rows(int *board, int row){
+
+    for(int i=0; i < row; i++){
+        for(int j=0; j < BOARD_COLS; j++){
+            if(board[i * BOARD_COLS + j] != 0 && board[i + 1 * BOARD_COLS + j] == 0){
+                board[i + 1 * BOARD_COLS + j] = board[i * BOARD_COLS + j];
+                board[i * BOARD_COLS + j] = 0;
+            }
+        }
+    }
+}
+
