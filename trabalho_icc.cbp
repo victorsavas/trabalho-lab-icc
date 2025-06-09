@@ -38,9 +38,16 @@
 		<Compiler>
 			<Add directory="allegro/include" />
 		</Compiler>
+		<Unit filename="src/gameloop_subroutines.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/gameloop_subroutines.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/tetris_tmp_main.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />

@@ -10,11 +10,12 @@
 #include "gameloop_subroutines.h"          // lógica do loop de eventos
 
                                            // Constantes de configuração da janela e dos sprites
-#define WIDTH 700                       // Largura da janela
-#define HEIGHT 500                        // Altura da janela
+#define FPS 15                           // taxa de quadros
+#define WIDTH 1500                         // Largura da janela
+#define HEIGHT 1000                        // Altura da janela
 #define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada peça na spritesheet
-#define PIECE_SPRITE_COLS 1                      // Número de colunas na spritesheet das peças
-#define BOARD_SPRITE_ROWS 4                      // Número de fileiras na spritesheet (cores diferentes)
+#define PIECE_SPRITE_COLS 1                // Número de colunas na spritesheet das peças
+#define BOARD_SPRITE_ROWS 4                // Número de fileiras na spritesheet (cores diferentes)
 #define BOARD_SPRITE_WIDTH 170
 #define BOARD_SPRITE_HEIGHT 330
 
@@ -35,7 +36,7 @@ int main() {
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 10);  // 60 quadros por segundo
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);  // 60 quadros por segundo
 
     // Registra as fontes de eventos que a fila vai monitorar
     al_register_event_source(queue, al_get_display_event_source(display));
@@ -103,20 +104,22 @@ int main() {
                     }
                 break;
 
-            case ALLEGRO_EVENT_TIMER:
+            case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
+
                 redraw = true; // Marca que a tela precisa ser redesenhada
+
+
+                if(fall_piece(&current_piece, board) == 1){  // faz as peças cairem, definido em gameloop.c
+                    correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
+                    current_piece.board_y = 0;  // retorna a peça ao topo
+                    current_piece.board_x = BOARD_COLS/2; // retorna a peça pro centro, com problema atualmente
+
+                    clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
+                }
                 break;
         }
+                correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
 
-        correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
-
-        if(fall_piece(&current_piece, board) == 1){  // faz as peças cairem, definido em gameloop.c
-
-        current_piece.board_y = 0;  // retorna a peça ao topo
-    //  current_piece.board_x = BOARD_COLS/2; // retorna a peça pro centro, com problema atualmente
-
-        clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
-        }
 
         if (redraw && al_is_event_queue_empty(queue)) { // Redesenho da tela
             redraw = false;
