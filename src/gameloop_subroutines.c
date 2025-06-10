@@ -6,9 +6,9 @@ t_piece piece_O = {
     .board_x = BOARD_COLS/2,
     .board_y = 0,
     .shape = {
-    {1, 1, 0, 0},
-    {1, 1, 0, 0},
     {0, 0, 0, 0},
+    {0, 1, 1, 0},
+    {0, 1, 1, 0},
     {0, 0, 0, 0}
     }       // formato da peça na matriz shape
 };
@@ -61,9 +61,9 @@ t_piece piece_S = {
     .board_x = BOARD_COLS/2,
     .board_y = 0,
     .shape = {
+    {0, 0, 0, 0},
     {0, 1, 1, 0},
     {1, 1, 0, 0},
-    {0, 0, 0, 0},
     {0, 0, 0, 0}
     }       // formato da peça na matriz shape
 };
@@ -72,9 +72,9 @@ t_piece piece_Z = {
     .board_x = BOARD_COLS/2,
     .board_y = 0,
     .shape = {
+    {0, 0, 0, 0},
     {1, 1, 0, 0},
     {0, 1, 1, 0},
-    {0, 0, 0, 0},
     {0, 0, 0, 0}
     }       // formato da peça na matriz shape
 };
@@ -268,5 +268,22 @@ void randomize_piece(t_piece *piece){ // aleatoriza a cor e formato da peça
     }
 }
 
+void rotate_piece(t_piece *piece, int side){ // rotaciona, 1 é pra esquerda e 0 pra direita
 
+    t_piece tmp_piece = *piece;
 
+    if(side == 1){
+        for(int i = 0; i < 4; i++){           // pega o formato da peça na matriz 4x4
+            for(int j = 0; j < 4; j++){
+                piece->shape[i][j] = tmp_piece.shape[4 - 1 - j][i]; // rotaciona a peça
+            }
+        }
+    }
+    if(side == 0){
+        for(int i = 0; i < 4; i++){           // pega o formato da peça na matriz 4x4
+            for(int j = 0; j < 4; j++){
+                piece->shape[i][j] = tmp_piece.shape[j][4 - 1 - i]; // rotaciona a peça
+            }
+        }
+    }
+}

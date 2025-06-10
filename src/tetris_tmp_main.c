@@ -11,7 +11,7 @@
 #include "gameloop_subroutines.h"          // lógica do loop de eventos
 
                                            // Constantes de configuração da janela e dos sprites
-#define FPS 12                           // taxa de quadros
+#define FPS 5                              // taxa de quadros
 #define WIDTH 1500                         // Largura da janela
 #define HEIGHT 1000                        // Altura da janela
 #define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada peça na spritesheet
@@ -101,6 +101,15 @@ int main() {
                     current_piece.board_x += 1;
                     if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1;
                     }
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a peça
+                    rotate_piece(&current_piece,1);
+                    if(check_collisions(&current_piece, board) == 1) rotate_piece(&current_piece, 0); // volta em caso de colisão
+                 }
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a peça
+                    rotate_piece(&current_piece,0);
+                    if(check_collisions(&current_piece, board) == 1) rotate_piece(&current_piece, 1); // volta em caso de colisão
+                 }
+
                 break;
 
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
