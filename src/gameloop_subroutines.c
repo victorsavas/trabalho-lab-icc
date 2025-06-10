@@ -165,10 +165,19 @@ void correct_piece_onboard(t_piece *piece){ // retorna as peças pra borda do tab
                     piece->board_x = 0 - j;
                     return;
                 }
-
             }
         }
     }
+}
+
+int check_wallkick_collision(t_piece *piece, int *board){ // retorna as peças pra borda do tabuleiro baseado em seus formatos
+
+    t_piece tmp_piece = *piece;
+    correct_piece_onboard(&tmp_piece);
+    if(check_collisions(&tmp_piece, board) == 1){
+        return 1;
+    }
+    else return 0;
 }
 
 int clear_full_rows(int *board){    // remove fileiras cheias, essa função não funciona na primeira fileira por algum motivo

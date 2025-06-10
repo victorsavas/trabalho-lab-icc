@@ -11,7 +11,7 @@
 #include "gameloop_subroutines.h"          // lógica do loop de eventos
 
                                            // Constantes de configuração da janela e dos sprites
-#define FPS 5                              // taxa de quadros
+#define FPS 60                             // taxa de quadros
 #define WIDTH 1500                         // Largura da janela
 #define HEIGHT 1000                        // Altura da janela
 #define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada peça na spritesheet
@@ -57,6 +57,7 @@ int main() {
 
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
     int cleared_row = 0; // usado na função de descer as fileiras limpas
+    int fall_timer = 0; // usado para queda de blocos
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
@@ -69,10 +70,8 @@ int main() {
 
     srand(time(NULL)); // necessário para aleatorizar as peças
 
-    t_piece current_piece;
+    t_piece current_piece;  // cria a peça livre
     randomize_piece(&current_piece) ;// aleatoriza a primeira peça
-
-
 
     al_start_timer(timer);    // Inicia o temporizador
 
@@ -80,7 +79,7 @@ int main() {
 
         al_wait_for_event(queue, &ev);   // Aguarda próximo evento na fila
 
-        remove_piece_board(&current_piece, board); // corrige o erro de sobreposição das peças
+       // remove_piece_board(&current_piece, board); // corrige o erro de sobreposição das peças
 
         // Tratamento dos eventos recebidos
         switch (ev.type) {
@@ -94,20 +93,41 @@ int main() {
                     falling = false;
 
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a peça baseado no input do teclado
-                    current_piece.board_x -= 1;
-                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1;
+                    remove_piece_board(&current_piece, board);          // remove a peça antiga
+                    current_piece.board_x -= 1;                         // move para a esquerda
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1; // retorna caso nova posição colide
+                    add_piece_board(&current_piece, board);             // adiciona a peça de volta
+                    timer = 0;                                          // segura a peça após um movimento
                     }
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a peça baseado no input do teclado
-                    current_piece.board_x += 1;
-                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1;
+                    remove_piece_board(&current_piece, board);          // remove a peça antiga
+                    current_piece.board_x += 1;                         // move para a direita
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1; // retorna caso nova posição colide
+                    add_piece_board(&current_piece, board);             // adiciona a peça de volta
+                    timer = 0;                                          // segura a queda após um movimento
                     }
-                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a peça
-                    rotate_piece(&current_piece,1);
-                    if(check_collisions(&current_piece, board) == 1) rotate_piece(&current_piece, 0); // volta em caso de colisão
-                 }
                  else if (ev.keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a peça
+                    remove_piece_board(&current_piece, board);
+                    rotate_piece(&current_piece,1);
+                    if(check_wallkick_collision(&current_piece, board) == 0)
+                    correct_piece_onboard(&current_piece);
+                    if(check_collisions(&current_piece, board) == 1){
+                    rotate_piece(&current_piece, 0); // volta em caso de colisão
+                    }
+                    add_piece_board(&current_piece, board);
+                    timer = 0;
+                 }
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a peça
+                    remove_piece_board(&current_piece, board);
                     rotate_piece(&current_piece,0);
-                    if(check_collisions(&current_piece, board) == 1) rotate_piece(&current_piece, 1); // volta em caso de colisão
+                    if(check_wallkick_collision(&current_piece, board) == 0)
+                    correct_piece_onboard(&current_piece);
+                    if(check_collisions(&current_piece, board) == 1){
+                    rotate_piece(&current_piece, 1); // volta em caso de colisão
+                    }
+                    add_piece_board(&current_piece, board);
+                    timer = 0;
+
                  }
 
                 break;
@@ -115,14 +135,18 @@ int main() {
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
 
                 redraw = true; // Marca que a tela precisa ser redesenhada
+                fall_timer++;
+                if(timer > 1000) timer = 0; // reinicia o timer para evitar problemas
 
-
-                if(fall_piece(&current_piece, board) == 1){  // faz as peças cairem, definido em gameloop.c
-                    correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
-                    current_piece.board_y = 0;  // retorna a peça ao topo
-                    current_piece.board_x = BOARD_COLS/2; // retorna a peça pro centro, com problema atualmente
-                    randomize_piece(&current_piece);
-                    clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
+                if(fall_timer % (FPS/5) == 0){                       // timer de queda para as peças
+                    if(fall_piece(&current_piece, board) == 1){      // faz as peças cairem, testa se chegaram no fundo
+                        correct_piece_onboard(&current_piece);       // corrige escape de peças do mapa
+                        current_piece.board_y = 0;                   // retorna a peça ao topo
+                        current_piece.board_x = BOARD_COLS/2;        // retorna a peça pro centro
+                        randomize_piece(&current_piece);             // aleatoriza a peça após a queda
+                        clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
+                        add_piece_board(&current_piece, board);      // adiciona a peça no topo para manter integridade
+                    }
                 }
                 break;
         }

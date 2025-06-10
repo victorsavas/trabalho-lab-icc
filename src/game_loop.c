@@ -34,8 +34,8 @@ const Tetromino tetromino_table[7] =
         .y = 0,
 
         .shape = {
-            0,1,1,0,
-            0,1,1,0,
+            1,1,0,0,
+            1,1,0,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -112,7 +112,7 @@ const Tetromino tetromino_table[7] =
     },
 
     {
-        .type = TETROMINO_T,
+        .type = TETROMINO_I,
 
         .x = 4,
         .y = 0,
