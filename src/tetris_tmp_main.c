@@ -7,10 +7,11 @@
 #include <allegro5/allegro_image.h>        // Carregamento de imagens
 #include <allegro5/mouse.h>                // Suporte ao mouse
 #include <allegro5/keyboard.h>             // Suporte ao teclado
+#include <time.h>                          // necessário para aleatorizar as peças
 #include "gameloop_subroutines.h"          // lógica do loop de eventos
 
                                            // Constantes de configuração da janela e dos sprites
-#define FPS 15                           // taxa de quadros
+#define FPS 12                           // taxa de quadros
 #define WIDTH 1500                         // Largura da janela
 #define HEIGHT 1000                        // Altura da janela
 #define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada peça na spritesheet
@@ -57,7 +58,7 @@ int main() {
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
     int cleared_row = 0; // usado na função de descer as fileiras limpas
 
-    for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base
+    for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
         // 0 vazio
         // 1 vermelho
@@ -66,16 +67,12 @@ int main() {
         // 4 verde
     }
 
-    t_piece current_piece = { // struct da peça atual
-        .board_x = BOARD_COLS/2,
-        .board_y = 0,
-        .shape = {
-        {1, 1, 0, 0},
-        {1, 1, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0}
-        }       // formato da peça na matriz shape
-    };
+    srand(time(NULL)); // necessário para aleatorizar as peças
+
+    t_piece current_piece;
+    randomize_piece(&current_piece) ;// aleatoriza a primeira peça
+
+
 
     al_start_timer(timer);    // Inicia o temporizador
 
@@ -98,9 +95,11 @@ int main() {
 
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a peça baseado no input do teclado
                     current_piece.board_x -= 1;
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1;
                     }
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a peça baseado no input do teclado
                     current_piece.board_x += 1;
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1;
                     }
                 break;
 
@@ -113,7 +112,7 @@ int main() {
                     correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
                     current_piece.board_y = 0;  // retorna a peça ao topo
                     current_piece.board_x = BOARD_COLS/2; // retorna a peça pro centro, com problema atualmente
-
+                    randomize_piece(&current_piece);
                     clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
                 }
                 break;

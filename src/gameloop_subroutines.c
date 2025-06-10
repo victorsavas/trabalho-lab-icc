@@ -1,5 +1,83 @@
-
 #include "gameloop_subroutines.h"
+
+// criação de variáveis para os formatos possíveis de peças
+
+t_piece piece_O = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {1, 1, 0, 0},
+    {1, 1, 0, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_I = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {0, 0, 1, 0},
+    {0, 0, 1, 0},
+    {0, 0, 1, 0},
+    {0, 0, 1, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_J = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {1, 0, 0, 0},
+    {1, 1, 1, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_L = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {0, 0, 1, 0},
+    {1, 1, 1, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_T = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {0, 1, 0, 0},
+    {1, 1, 1, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_S = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {0, 1, 1, 0},
+    {1, 1, 0, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
+
+t_piece piece_Z = {
+    .board_x = BOARD_COLS/2,
+    .board_y = 0,
+    .shape = {
+    {1, 1, 0, 0},
+    {0, 1, 1, 0},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
+    }       // formato da peça na matriz shape
+};
 
 int check_collisions(t_piece *piece, int *board){
 
@@ -78,14 +156,16 @@ void correct_piece_onboard(t_piece *piece){ // retorna as peças pra borda do tab
     for(int i = 0; i < 4; i++){             // pega o formato da peça na matriz 4x4
         for(int j = 0; j < 4; j++){
             if(piece->shape[i][j] != 0){
+
                 if((piece->board_x + j) > 9){   // retorna a extremidade da peça para a borda 9 do tabuleiro
-                    piece->board_x = 9 - j;
+                    piece->board_x = (BOARD_COLS-1) - j;
                     return;
                 }
                 else if((piece->board_x + j) < 0){  // retorna a extremidade da peça para a borda 0 do tabuleiro
                     piece->board_x = 0 - j;
                     return;
                 }
+
             }
         }
     }
@@ -138,6 +218,53 @@ void clear_and_fall_rows(t_piece *piece, int *board){ // subrotina loop que limp
 
     while((cleared_row = clear_full_rows(board)) != -1){    // limpa cada fileira cheia e desce as acima
         fall_upper_rows(board, cleared_row);
+    }
+}
+
+void randomize_piece(t_piece *piece){ // aleatoriza a cor e formato da peça
+
+// requer srand(time(NULL)) no main
+
+    int new_color = (rand() % 4) + 1;
+    int new_shape = (rand() % 7);
+
+    switch(new_shape){ // define o novo formato da peça
+
+    case 0:{
+        *piece = piece_O;
+        break;  }
+
+    case 1:{
+        *piece = piece_I;
+        break;  }
+
+    case 2:{
+        *piece = piece_J;
+        break;  }
+
+    case 3:{
+        *piece = piece_S;
+        break;  }
+
+    case 4:{
+        *piece = piece_Z;
+        break;  }
+
+    case 5:{
+        *piece = piece_T;
+        break;  }
+
+    case 6:{
+        *piece = piece_L;
+        break;  }
+    }
+
+    for(int i = 0; i < 4; i++){           // pega o formato da peça na matriz 4x4
+        for(int j = 0; j < 4; j++){
+            if(piece->shape[i][j] != 0){
+                piece->shape[i][j] = new_color; // aplica a nova cor a cada bloco
+            }
+        }
     }
 }
 
