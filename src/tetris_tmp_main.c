@@ -32,7 +32,6 @@ int main() {
     al_install_audio();
     al_init_acodec_addon();
 
-
     ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);   // Cria uma janela com as dimensões especificadas
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
@@ -51,13 +50,14 @@ int main() {
     al_convert_mask_to_alpha(board_sprite, al_map_rgb(0, 0, 0));
 
     // Variáveis de controle da aplicação
-    bool falling = true;      // Indica se a aplicação deve continuar executando
+    int falling = 1;      // Indica se a aplicação deve continuar executando
     bool redraw = true;       // Indica se a tela precisa ser redesenhada
     ALLEGRO_EVENT ev;         // Estrutura para eventos
 
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
     int cleared_row = 0; // usado na função de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
+    int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
@@ -75,7 +75,7 @@ int main() {
 
     al_start_timer(timer);    // Inicia o temporizador
 
-    while (falling) {         // Loop principal do jogo
+    while (falling == 1) {         // Loop principal do jogo
 
         al_wait_for_event(queue, &ev);   // Aguarda próximo evento na fila
 
@@ -90,7 +90,7 @@ int main() {
             case ALLEGRO_EVENT_KEY_DOWN:
 
                 if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)          // termina o jogo
-                    falling = false;
+                    falling = 0;
 
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a peça baseado no input do teclado
                     remove_piece_board(&current_piece, board);          // remove a peça antiga
@@ -136,13 +136,20 @@ int main() {
 
                 redraw = true; // Marca que a tela precisa ser redesenhada
                 fall_timer++;
-                if(timer > 1000) timer = 0; // reinicia o timer para evitar problemas
+                if(fall_timer > 1000) fall_timer = 0; // reinicia o timer para evitar problemas
 
-                if(fall_timer % (FPS/5) == 0){                       // timer de queda para as peças
+                if(fall_timer > (FPS * 3/15)){                       // timer de queda para as peças
+                    fall_timer = 0;
                     if(fall_piece(&current_piece, board) == 1){      // faz as peças cairem, testa se chegaram no fundo
                         correct_piece_onboard(&current_piece);       // corrige escape de peças do mapa
                         current_piece.board_y = 0;                   // retorna a peça ao topo
                         current_piece.board_x = BOARD_COLS/2;        // retorna a peça pro centro
+                        if(check_collisions(&current_piece, board) == 1){
+                            for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
+                            board[i] = 0;}
+                            randomize_piece(&current_piece); // reinicia o jogo em caso de derrota
+                            }
+                            //falling = 0; // termina o jogo caso a peça inicie em colisão
                         randomize_piece(&current_piece);             // aleatoriza a peça após a queda
                         clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
                         add_piece_board(&current_piece, board);      // adiciona a peça no topo para manter integridade
@@ -164,13 +171,19 @@ int main() {
             for(int i=0; i<20; i++){        // adiciona cada sprite dos blocos no display
                 for(int j=0; j<10; j++){
                     sprite_y = board[i * BOARD_COLS + j] - 1; // define a cor do bloco de acordo com o tabuleiro
-                    al_draw_bitmap_region(piece_sprite, sprite_x, 16 * sprite_y, PIECE_SPRITE_SIZE, PIECE_SPRITE_SIZE,
-                                         (WIDTH - PIECE_SPRITE_SIZE - BOARD_SPRITE_WIDTH)/2 + (PIECE_SPRITE_SIZE * j), HEIGHT/5 + PIECE_SPRITE_SIZE + (PIECE_SPRITE_SIZE * i), 0);
-                                            // desenha o bloco
+                    al_draw_scaled_bitmap(piece_sprite,
+                                          sprite_x, 16 * sprite_y,
+                                          PIECE_SPRITE_SIZE, PIECE_SPRITE_SIZE,
+                                         (WIDTH - ((BOARD_SPRITE_WIDTH - 10) * sprite_scaling)/16)/2 + (sprite_scaling * j),
+                                          (HEIGHT - ((BOARD_SPRITE_HEIGHT - 10) * sprite_scaling)/16)/2 + (sprite_scaling * i),
+                                          sprite_scaling, sprite_scaling, 0);
+                                            // desenha o bloco baseado na escala definida
                     }
                 }
-            al_draw_bitmap_region(board_sprite, 0, 0, 170, 330,
-                                         (WIDTH - PIECE_SPRITE_SIZE - BOARD_SPRITE_WIDTH)/2 - 5, HEIGHT/5 + 10, 0);
+            al_draw_scaled_bitmap(board_sprite, 0, 0, 170, 330,
+                                  (WIDTH - (BOARD_SPRITE_WIDTH * sprite_scaling)/16)/2,
+                                  (HEIGHT - (BOARD_SPRITE_HEIGHT * sprite_scaling)/16)/2,
+                                  (170 * sprite_scaling) / 16, (330 * sprite_scaling) / 16, 0);
                                             // desenha a borda do tabuleiro
                                             // o (-5) e (+10) são proporções para alinhar o tabuleiro com as peças
 
