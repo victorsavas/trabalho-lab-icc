@@ -1,0 +1,1 @@
+Requer a biblioteca Allegro e a pasta sprites para funcionar.
