@@ -1,5 +1,8 @@
 #pragma once
 
+#include <time.h>                          // necessário para aleatorizar as peças
+#include "gameloop_subroutines.h"          // lógica do loop de eventos
+
 // Inclusão das bibliotecas necessárias para cada funcionalidade utilizada
 #include <allegro5/allegro.h>              // Biblioteca principal do Allegro
 #include <allegro5/allegro_font.h>         // Suporte para fontes bitmap
@@ -10,7 +13,6 @@
 #include <allegro5/allegro_image.h>        // Carregamento de imagens
 #include <allegro5/mouse.h>                // Suporte ao mouse
 #include <allegro5/keyboard.h>             // Suporte ao teclado
-
 // struct contendo as estruturas empregadas pela Allegro
 
 struct allegro_context_t {
