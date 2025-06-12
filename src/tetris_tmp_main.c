@@ -1,27 +1,22 @@
-#include <allegro5/allegro.h>              // Biblioteca principal do Allegro
-#include <allegro5/allegro_font.h>         // Suporte para fontes bitmap
-#include <allegro5/allegro_ttf.h>          // Suporte para fontes TrueType
-#include <allegro5/allegro_primitives.h>   // Desenho de primitivas (formas geom√©tricas)
-#include <allegro5/allegro_audio.h>        // Sistema de √°udio
-#include <allegro5/allegro_acodec.h>       // Suporte a codecs de √°udio
-#include <allegro5/allegro_image.h>        // Carregamento de imagens
-#include <allegro5/mouse.h>                // Suporte ao mouse
-#include <allegro5/keyboard.h>             // Suporte ao teclado
-#include <time.h>                          // necess√°rio para aleatorizar as pe√ßas
-#include "gameloop_subroutines.h"          // l√≥gica do loop de eventos
+#include "allegro_context.h"               // contÈm todos os includes do allegro
+#include <time.h>                          // necess·rio para aleatorizar as peÁas
+#include "gameloop_subroutines.h"          // lÛgica do loop de eventos
 
-                                           // Constantes de configura√ß√£o da janela e dos sprites
+// Constantes de configuraÁ„o da janela e dos sprites
+
 #define FPS 60                             // taxa de quadros
 #define WIDTH 1500                         // Largura da janela
 #define HEIGHT 1000                        // Altura da janela
-#define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada pe√ßa na spritesheet
-#define PIECE_SPRITE_COLS 1                // N√∫mero de colunas na spritesheet das pe√ßas
-#define BOARD_SPRITE_ROWS 4                // N√∫mero de fileiras na spritesheet (cores diferentes)
+#define PIECE_SPRITE_SIZE 16               // Tamanho (largura e altura) de cada peÁa na spritesheet
+#define PIECE_SPRITE_COLS 1                // N˙mero de colunas na spritesheet das peÁas
+#define BOARD_SPRITE_ROWS 4                // N˙mero de fileiras na spritesheet (cores diferentes)
 #define BOARD_SPRITE_WIDTH 170
 #define BOARD_SPRITE_HEIGHT 330
 
-int main() {
-    // Inicializa o Allegro e os m√≥dulos necess√°rios
+
+int maidn() {
+
+    // Inicializa o Allegro e os mÛdulos necess·rios
     al_init();
     al_init_font_addon();
     al_init_ttf_addon();
@@ -32,9 +27,9 @@ int main() {
     al_install_audio();
     al_init_acodec_addon();
 
-    ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);   // Cria uma janela com as dimens√µes especificadas
+    ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);   // Cria uma janela com as dimensıes especificadas
 
-    // Cria uma fila de eventos para tratar intera√ß√µes do usu√°rio e um temporizador para controle de FPS
+    // Cria uma fila de eventos para tratar interaÁıes do usu·rio e um temporizador para controle de FPS
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);  // 60 quadros por segundo
 
@@ -43,19 +38,19 @@ int main() {
     al_register_event_source(queue, al_get_timer_event_source(timer));
     al_register_event_source(queue, al_get_keyboard_event_source());
 
-    // Carrega uma imagem contendo m√∫ltimos sprites (spritesheet)
+    // Carrega uma imagem contendo m˙ltimos sprites (spritesheet)
     ALLEGRO_BITMAP *piece_sprite = al_load_bitmap("../../sprites/tetris_sprite_16x16.png");
     ALLEGRO_BITMAP *board_sprite = al_load_bitmap("../../sprites/borda_tetris_170x330.png");
     al_convert_mask_to_alpha(piece_sprite, al_map_rgb(0, 0, 0));
     al_convert_mask_to_alpha(board_sprite, al_map_rgb(0, 0, 0));
 
-    // Vari√°veis de controle da aplica√ß√£o
-    int falling = 1;      // Indica se a aplica√ß√£o deve continuar executando
+    // Vari·veis de controle da aplicaÁ„o
+    int falling = 1;      // Indica se a aplicaÁ„o deve continuar executando
     bool redraw = true;       // Indica se a tela precisa ser redesenhada
     ALLEGRO_EVENT ev;         // Estrutura para eventos
 
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
-    int cleared_row = 0; // usado na fun√ß√£o de descer as fileiras limpas
+    int cleared_row = 0; // usado na funÁ„o de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
     int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
     float fall_speed = 0.50;    // maior diminui a velocidade, menor aumenta
@@ -69,18 +64,18 @@ int main() {
         // 4 verde
     }
 
-    srand(time(NULL)); // necess√°rio para aleatorizar as pe√ßas
+    srand(time(NULL)); // necess·rio para aleatorizar as peÁas
 
-    t_piece current_piece;  // cria a pe√ßa livre
-    randomize_piece(&current_piece) ;// aleatoriza a primeira pe√ßa
+    t_piece current_piece;  // cria a peÁa livre
+    randomize_piece(&current_piece) ;// aleatoriza a primeira peÁa
 
     al_start_timer(timer);    // Inicia o temporizador
 
     while (falling == 1) {         // Loop principal do jogo
 
-        al_wait_for_event(queue, &ev);   // Aguarda pr√≥ximo evento na fila
+        al_wait_for_event(queue, &ev);   // Aguarda prÛximo evento na fila
 
-       // remove_piece_board(&current_piece, board); // corrige o erro de sobreposi√ß√£o das pe√ßas
+       // remove_piece_board(&current_piece, board); // corrige o erro de sobreposiÁ„o das peÁas
 
         // Tratamento dos eventos recebidos
         switch (ev.type) {
@@ -93,53 +88,51 @@ int main() {
                 if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)          // termina o jogo
                     falling = 0;
 
-                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a pe√ßa baseado no input do teclado
-                    remove_piece_board(&current_piece, board);          // remove a pe√ßa antiga
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a peÁa baseado no input do teclado
+                    remove_piece_board(&current_piece, board);          // remove a peÁa antiga
                     current_piece.board_x -= 1;                         // move para a esquerda
-                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1; // retorna caso nova posi√ß√£o colide
-                    add_piece_board(&current_piece, board);             // adiciona a pe√ßa de volta
-                    fall_timer = 0;                                     // segura a pe√ßa ap√≥s um movimento
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1; // retorna caso nova posiÁ„o colide
+                    add_piece_board(&current_piece, board);             // adiciona a peÁa de volta
+                    fall_timer = 0;                                     // segura a peÁa apÛs um movimento
                     }
-                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a pe√ßa baseado no input do teclado
-                    remove_piece_board(&current_piece, board);          // remove a pe√ßa antiga
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a peÁa baseado no input do teclado
+                    remove_piece_board(&current_piece, board);          // remove a peÁa antiga
                     current_piece.board_x += 1;                         // move para a direita
-                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1; // retorna caso nova posi√ß√£o colide
-                    add_piece_board(&current_piece, board);             // adiciona a pe√ßa de volta
-                    fall_timer = 0;                                     // segura a queda ap√≥s um movimento
+                    if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1; // retorna caso nova posiÁ„o colide
+                    add_piece_board(&current_piece, board);             // adiciona a peÁa de volta
+                    fall_timer = 0;                                     // segura a queda apÛs um movimento
                     }
-                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a pe√ßa
-                    remove_piece_board(&current_piece, board);          // remove pe√ßa para evitar conflitos
-                    rotate_piece(&current_piece,1);                     // rootaciona a pe√ßa
-                    if(check_wallkick_collision(&current_piece, board) == 0)    // caso a pe√ßa n√£o v√° colidir no wallkick
-                    correct_piece_onboard(&current_piece);              // d√° wallkick na pe√ßa
-                    if(check_collisions(&current_piece, board) == 1){   // caso a pe√ßa v√° colidir
-                    rotate_piece(&current_piece, 0);                    // volta em caso de colis√£o
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a peÁa
+                    remove_piece_board(&current_piece, board);          // remove peÁa para evitar conflitos
+                    rotate_piece(&current_piece,1);                     // rootaciona a peÁa
+                    if(check_wallkick_collision(&current_piece, board) == 0)    // caso a peÁa n„o v· colidir no wallkick
+                    correct_piece_onboard(&current_piece);              // d· wallkick na peÁa
+                    if(check_collisions(&current_piece, board) == 1){   // caso a peÁa v· colidir
+                    rotate_piece(&current_piece, 0);                    // volta em caso de colis„o
                     }
-                    add_piece_board(&current_piece, board);             // adiciona a pe√ßa
+                    add_piece_board(&current_piece, board);             // adiciona a peÁa
                     fall_timer = 0;                                     // pausa a queda
                  }
-                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a pe√ßa
-                    remove_piece_board(&current_piece, board);          // remove pe√ßa para evitar conflitos
-                    rotate_piece(&current_piece,0);                     // rotaciona a pe√ßa
-                    if(check_wallkick_collision(&current_piece, board) == 0)    // caso a pe√ßa n√£o v√° colidir no wallkick
-                    correct_piece_onboard(&current_piece);              // d√° wallkick na pe√ßa
-                    if(check_collisions(&current_piece, board) == 1){   // caso a pe√ßa colida na rota√ß√£o
-                    rotate_piece(&current_piece, 1);                    // volta em caso de colis√£o
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a peÁa
+                    remove_piece_board(&current_piece, board);          // remove peÁa para evitar conflitos
+                    rotate_piece(&current_piece,0);                     // rotaciona a peÁa
+                    if(check_wallkick_collision(&current_piece, board) == 0)    // caso a peÁa n„o v· colidir no wallkick
+                    correct_piece_onboard(&current_piece);              // d· wallkick na peÁa
+                    if(check_collisions(&current_piece, board) == 1){   // caso a peÁa colida na rotaÁ„o
+                    rotate_piece(&current_piece, 1);                    // volta em caso de colis„o
                     }
-                    add_piece_board(&current_piece, board);             // adiciona a pe√ßa
+                    add_piece_board(&current_piece, board);             // adiciona a peÁa
                     fall_timer = 0;                                     // pausa a queda
                  }
-                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a pe√ßa descer bem r√°pido
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peÁa descer bem r·pido
                     fall_speed = 1/FPS;                                 // aumenta velocidade de queda enquanto segurado
                 }
-
                 break;
 
             case ALLEGRO_EVENT_KEY_UP:
 
-                if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
+                if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)          // termina o jogo
                     fall_speed = 0.5;
-
 
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
 
@@ -147,27 +140,28 @@ int main() {
                 fall_timer++;
                 if(fall_timer > 1000) fall_timer = 0; // reinicia o timer para evitar problemas
 
-                if(fall_timer > (FPS * 3/15)){                       // timer de queda para as pe√ßas
+                if(fall_timer > (FPS * fall_speed)){                       // timer de queda para as peÁas
                     fall_timer = 0;
-                    if(fall_piece(&current_piece, board) == 1){      // faz as pe√ßas cairem, testa se chegaram no fundo
+                    if(fall_piece(&current_piece, board) == 1){      // faz as peÁas cairem, testa se chegaram no fundo
                         fall_speed = 0.5;
-                        correct_piece_onboard(&current_piece);       // corrige escape de pe√ßas do mapa
-                        current_piece.board_y = 0;                   // retorna a pe√ßa ao topo
-                        current_piece.board_x = BOARD_COLS/2;        // retorna a pe√ßa pro centro
+                        correct_piece_onboard(&current_piece);       // corrige escape de peÁas do mapa
+                        current_piece.board_y = 0;                   // retorna a peÁa ao topo
+                        current_piece.board_x = BOARD_COLS/2;        // retorna a peÁa pro centro
                         if(check_collisions(&current_piece, board) == 1){
                             for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
                             board[i] = 0;}
                             randomize_piece(&current_piece); // reinicia o jogo em caso de derrota
+                            //falling = 0; // termina o jogo caso a peÁa inicie em colis„o
                             }
-                            //falling = 0; // termina o jogo caso a pe√ßa inicie em colis√£o
-                        randomize_piece(&current_piece);             // aleatoriza a pe√ßa ap√≥s a queda
+
+                        randomize_piece(&current_piece);             // aleatoriza a peÁa apÛs a queda
                         clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
-                        add_piece_board(&current_piece, board);      // adiciona a pe√ßa no topo para manter integridade
+                        add_piece_board(&current_piece, board);      // adiciona a peÁa no topo para manter integridade
                     }
                 }
                 break;
         }
-                correct_piece_onboard(&current_piece); // corrige escape de pe√ßas do mapa
+                correct_piece_onboard(&current_piece); // corrige escape de peÁas do mapa
 
 
         if (redraw && al_is_event_queue_empty(queue)) { // Redesenho da tela
@@ -175,8 +169,8 @@ int main() {
 
             al_clear_to_color(al_map_rgb(10, 10, 10));  // Limpa a tela com uma cor escura
 
-            int sprite_x = 0;        // Coordenada X no sprite da pe√ßa, sempre 0
-            int sprite_y = 0;        // Coordenada Y no sprite da pe√ßa, 0, 1, 2, 3, 4 de acordo com a cor
+            int sprite_x = 0;        // Coordenada X no sprite da peÁa, sempre 0
+            int sprite_y = 0;        // Coordenada Y no sprite da peÁa, 0, 1, 2, 3, 4 de acordo com a cor
 
             for(int i=0; i<20; i++){        // adiciona cada sprite dos blocos no display
                 for(int j=0; j<10; j++){
@@ -195,7 +189,7 @@ int main() {
                                   (HEIGHT - (BOARD_SPRITE_HEIGHT * sprite_scaling)/16)/2,
                                   (170 * sprite_scaling) / 16, (330 * sprite_scaling) / 16, 0);
                                             // desenha a borda do tabuleiro
-                                            // o (-5) e (+10) s√£o propor√ß√µes para alinhar o tabuleiro com as pe√ßas
+                                            // o (-5) e (+10) s„o proporÁıes para alinhar o tabuleiro com as peÁas
 
             al_flip_display(); // Atualiza a tela com o que foi desenhado
         }
@@ -212,9 +206,6 @@ int main() {
     // Libera recursos alocados
     al_destroy_bitmap(piece_sprite);
     al_destroy_bitmap(board_sprite);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(queue);
-    al_destroy_display(display);
 
     return 0;
 }
