@@ -1,10 +1,7 @@
+#include <stdlib.h>
 #include "allegro_context.h"
 
-// Constantes de configuração da janela e do sprite
-#define WIDTH  640                         // Largura da janela
-#define HEIGHT 480                         // Altura da janela
-
-AllegroContext allegro_init()
+AllegroContext *allegro_init()
 {
     // Inicializa o Allegro e os módulos necessários
     al_init();
@@ -18,11 +15,11 @@ AllegroContext allegro_init()
     al_init_acodec_addon();
 
     // Cria uma janela com as dimensões especificadas
-    ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);
+    ALLEGRO_DISPLAY *display = al_create_display(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
     ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 60); // 60 quadros por segundo
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 60.0); // 60 quadros por segundo
 
     // Registra as fontes de eventos que a fila vai monitorar
     al_register_event_source(queue, al_get_display_event_source(display));
@@ -33,19 +30,31 @@ AllegroContext allegro_init()
     // Inicia o temporizador
     al_start_timer(timer);
 
-    AllegroContext allegro = {
+    AllegroContext *allegro;
+
+    allegro = malloc(sizeof(allegro));
+
+    *allegro = (AllegroContext){
         .display = display,
         .queue = queue,
-        .timer = timer
+        .timer = timer,
+        .event = {0},
+        .redraw = 0
     };
 
     return allegro;
 }
 
-void allegro_free(AllegroContext allegro)
+void allegro_free(AllegroContext *allegro)
 {
+    if (allegro == NULL) {
+        return;
+    }
+
     // Libera recursos alocados
-    al_destroy_timer(allegro.timer);
-    al_destroy_event_queue(allegro.queue);
-    al_destroy_display(allegro.display);
+    al_destroy_timer(allegro->timer);
+    al_destroy_event_queue(allegro->queue);
+    al_destroy_display(allegro->display);
+
+    free(allegro);
 }

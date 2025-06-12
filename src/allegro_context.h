@@ -11,16 +11,20 @@
 #include <allegro5/mouse.h>                // Suporte ao mouse
 #include <allegro5/keyboard.h>             // Suporte ao teclado
 
+// Macros contendo as dimensões da janela
+
+#define WINDOW_WIDTH  1080
+#define WINDOW_HEIGHT 720
+
 // struct contendo as estruturas empregadas pela Allegro
 
-struct allegro_context_t {
+typedef struct AllegroContext {
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *queue;
     ALLEGRO_TIMER *timer;
     ALLEGRO_EVENT event;
-};
+    int redraw;
+} AllegroContext;
 
-typedef struct allegro_context_t AllegroContext;
-
-AllegroContext allegro_init();
-void allegro_free(AllegroContext allegro);
+AllegroContext *allegro_init();
+void allegro_free(AllegroContext *allegro);
