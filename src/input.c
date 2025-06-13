@@ -14,7 +14,7 @@ void input_free(Input *input)
     free(input);
 }
 
-void input_update(AllegroContext *allegro, Input *input)
+void input_pressed_flush(Input *input)
 {
     // Zerando as variáveis um frame após a tecla ser pressionado
 
@@ -23,14 +23,17 @@ void input_update(AllegroContext *allegro, Input *input)
     input->up_pressed    = 0;
     input->down_pressed  = 0;
 
-    input->rotate_clockwise_pressed        = 0;
-    input->rotate_counterclockwise_pressed = 0;
+    input->z_pressed = 0;
+    input->x_pressed = 0;
 
-    input->fast_fall_pressed = 0;
-    input->hand_pressed      = 0;
+    input->space_pressed = 0;
+    input->c_pressed     = 0;
 
     input->escape_pressed = 0;
+}
 
+void input_update(AllegroContext *allegro, Input *input)
+{
     // Checando teclas pressionadas
 
     if (allegro->event.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -56,19 +59,19 @@ void input_update(AllegroContext *allegro, Input *input)
             break;
 
         case ALLEGRO_KEY_Z:
-            input->rotate_counterclockwise_pressed = 1;
+            input->z_pressed = 1;
             break;
 
         case ALLEGRO_KEY_X:
-            input->rotate_clockwise_pressed = 1;
+            input->x_pressed = 1;
             break;
 
         case ALLEGRO_KEY_C:
-            input->hand_pressed = 1;
+            input->c_pressed = 1;
             break;
 
         case ALLEGRO_KEY_SPACE:
-            input->fast_fall_pressed = 1;
+            input->space_pressed = 1;
             break;
 
         case ALLEGRO_KEY_ESCAPE:

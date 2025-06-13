@@ -1,9 +1,8 @@
 #include "game.h"
 
-void game_loop(AllegroContext *allegro)
+void game_loop(AllegroContext *allegro, Input *input)
 {
     GameMode mode = MODE_PLAYFIELD;
-    Input *input = input_init();
 
     while (mode) {
         switch (mode) {
@@ -15,6 +14,4 @@ void game_loop(AllegroContext *allegro)
             break;
         }
     }
-
-    input_free(input);
 }

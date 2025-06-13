@@ -13,11 +13,11 @@ typedef struct Input {
     int up_pressed;
     int down_pressed;
 
-    int rotate_clockwise_pressed;
-    int rotate_counterclockwise_pressed;
+    int z_pressed;
+    int x_pressed;
 
-    int fast_fall_pressed;
-    int hand_pressed;
+    int space_pressed;
+    int c_pressed;
 
     int escape_pressed;
 } Input;
@@ -25,4 +25,5 @@ typedef struct Input {
 Input *input_init();
 void input_free(Input *input);
 
+void input_pressed_flush(Input *input);
 void input_update(AllegroContext *allegro, Input *input);

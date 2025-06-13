@@ -9,7 +9,7 @@ typedef enum GameMode {
     MODE_PLAYFIELD
 } GameMode;
 
-void game_loop(AllegroContext *allegro);
+void game_loop(AllegroContext *allegro, Input *input);
 
 GameMode game_main_menu(AllegroContext *allegro, Input *input);
 GameMode game_playfield(AllegroContext *allegro, Input *input);
