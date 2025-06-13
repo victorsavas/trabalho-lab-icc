@@ -343,7 +343,45 @@ void tetromino_next(Playfield *playfield, Tetromino *tetromino)
         }
     }
 
-    *tetromino = tetromino_table[1];
+    *tetromino = tetromino_table[TETROMINO_O];
+
+    // Verificando se há linhas preenchidas
+
+    int lines_cleared = 0;
+    int y_0;
+
+    for (int y = 19; y >= 0; y--) {
+        int x;
+        for (x = 0; x < 10; x++) {
+            if (playfield->board[x + y * 10] == 0) {
+                break;
+            }
+        }
+
+        // Linha preenchida
+        if (x == 10) {
+            lines_cleared++;
+        } else if (lines_cleared > 0) {
+            y_0 = y;
+            break;
+        }
+    }
+
+    // Limpando as linhas
+
+    for (int y = y_0; y >= 0; y--) {
+        for (int x = 0; x < 10; x++) {
+            playfield->board[x + (y + lines_cleared) * 10] = playfield->board[x + y * 10];
+        }
+    }
+
+    for (int y = 0; y < lines_cleared; y++) {
+        for (int x = 0; x < 10; x++) {
+            playfield->board[x + y * 10] = 0;
+        }
+    }
+
+    playfield->lines_cleared += lines_cleared;
 }
 
 void tetromino_wall_kick(Playfield *playfield, Tetromino *tetromino, Tetromino updated_tetromino, int rotation)
@@ -439,6 +477,21 @@ void update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, 
 
     Tetromino updated_tetromino = *tetromino;
 
+    // Queda rápida
+
+    if (input->space_pressed) {
+        for (int i = 0; i < 20; i++) {
+            if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
+                *tetromino = updated_tetromino;
+                break;
+            }
+            updated_tetromino.y++;
+        }
+
+        tetromino_next(playfield, tetromino);
+        updated_tetromino = *tetromino;
+    }
+
     // Cheque do movimento vertical
 
     if (playfield->piece_fall_timer <= 0.0) {
@@ -457,7 +510,7 @@ void update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, 
     if (y_move) {
         if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
             tetromino_next(playfield, tetromino);
-            return;
+            updated_tetromino = *tetromino;
         }
     }
 
@@ -533,7 +586,7 @@ GameMode game_playfield(AllegroContext *allegro, Input *input)
         .piece_fast_fall_timer = 0.0
     };
 
-    Tetromino tetromino = tetromino_table[2];
+    Tetromino tetromino = tetromino_table[TETROMINO_O];
 
     while (1) {
         double current_time = al_get_time();
