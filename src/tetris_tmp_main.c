@@ -147,7 +147,7 @@ int main() {
                 fall_timer++;
                 if(fall_timer > 1000) fall_timer = 0; // reinicia o timer para evitar problemas
 
-                if(fall_timer > (FPS * 3/15)){                       // timer de queda para as peças
+                if(fall_timer > (FPS * fall_speed)){                       // timer de queda para as peças
                     fall_timer = 0;
                     if(fall_piece(&current_piece, board) == 1){      // faz as peças cairem, testa se chegaram no fundo
                         fall_speed = 0.5;
