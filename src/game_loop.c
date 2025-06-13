@@ -20,7 +20,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
     int cleared_row = 0; // usado na função de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
     int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
-    float fall_speed = 0.50;    // maior diminui a velocidade, menor aumenta
+    float fall_speed = 0.5;    // maior diminui a velocidade, menor aumenta
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;

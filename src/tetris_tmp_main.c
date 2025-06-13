@@ -53,7 +53,7 @@ int maidn() {
     int cleared_row = 0; // usado na função de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
     int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
-    float fall_speed = 0.50;    // maior diminui a velocidade, menor aumenta
+    float fall_speed = 0.20;    // maior diminui a velocidade, menor aumenta
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
@@ -132,7 +132,7 @@ int maidn() {
             case ALLEGRO_EVENT_KEY_UP:
 
                 if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)          // termina o jogo
-                    fall_speed = 0.5;
+                    fall_speed = 0.1;
 
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
 

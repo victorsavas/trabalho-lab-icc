@@ -38,9 +38,14 @@
 		<Compiler>
 			<Add directory="allegro/include" />
 		</Compiler>
+		<Unit filename="src/allegro_context.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/allegro_context.h" />
 		<Unit filename="src/game_loop.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/game_loop.h" />
 		<Unit filename="src/gameloop_subroutines.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -48,6 +53,9 @@
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/menus.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/tetris_tmp_main.c">
 			<Option compilerVar="CC" />
