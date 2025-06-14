@@ -91,8 +91,11 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                     add_piece_board(&current_piece, board);             // adiciona a peça
                     fall_timer = 0;                                     // pausa a queda
                  }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_DOWN || ev->keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
+                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peça descer bem rápido
                     fall_speed = 1/FPS;                                 // aumenta velocidade de queda enquanto segurado
+                }
+                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
+                    while(fall_piece(&current_piece, board) == 0);                                // aumenta velocidade de queda enquanto segurado
                 }
                 break;
 
