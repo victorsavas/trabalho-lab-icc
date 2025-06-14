@@ -220,14 +220,17 @@ void fall_upper_rows(int *board, int end_row){  // desce as fileiras até a espci
     }
 }
 
-void clear_and_fall_rows(t_piece *piece, int *board){ // subrotina loop que limpa e desce as fileiras
+int clear_and_fall_rows(t_piece *piece, int *board){ // subrotina loop que limpa e desce as fileiras
 
     int cleared_row;
+    int points = 0;
     remove_piece_board(piece, board);   // remove a peça para impedir conflitos de posição
 
     while((cleared_row = clear_full_rows(board)) != -1){    // limpa cada fileira cheia e desce as acima
+        points += 100;
         fall_upper_rows(board, cleared_row);
     }
+    return points;
 }
 
 void randomize_piece(t_piece *piece){ // aleatoriza a cor e formato da peça

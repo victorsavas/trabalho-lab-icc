@@ -31,7 +31,7 @@ int main(){
 
     menu(queue, timer, &ev);
 
-    game_loop(queue, timer, &ev); // executa o jogo;
+//    game_loop(queue, timer, &ev, 0.5); // executa o jogo;
 
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);

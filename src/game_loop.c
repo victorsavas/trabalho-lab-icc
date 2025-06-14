@@ -4,7 +4,7 @@
 #include "gameloop_subroutines.h"
 
 
-void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev)
+void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty)
 {
     // Carrega uma imagem contendo múltimos sprites (spritesheet)
     ALLEGRO_BITMAP *piece_sprite = al_load_bitmap("../../sprites/tetris_sprite_16x16.png");
@@ -20,7 +20,8 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
     int cleared_row = 0; // usado na função de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
     int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
-    float fall_speed = 0.5;    // maior diminui a velocidade, menor aumenta
+    int points = 0; // pontuação do usuário
+    float fall_speed = difficulty;    // maior diminui a velocidade, menor aumenta
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
@@ -90,7 +91,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                     add_piece_board(&current_piece, board);             // adiciona a peça
                     fall_timer = 0;                                     // pausa a queda
                  }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peça descer bem rápido
+                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_DOWN || ev->keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
                     fall_speed = 1/FPS;                                 // aumenta velocidade de queda enquanto segurado
                 }
                 break;
@@ -98,7 +99,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
             case ALLEGRO_EVENT_KEY_UP:
 
                 if (ev->keyboard.keycode == ALLEGRO_KEY_DOWN)
-                    fall_speed = 0.5;
+                    fall_speed = difficulty;
 
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
 
@@ -109,19 +110,20 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                 if(fall_timer > (FPS * fall_speed)){                       // timer de queda para as peças
                     fall_timer = 0;
                     if(fall_piece(&current_piece, board) == 1){      // faz as peças cairem, testa se chegaram no fundo
-                        fall_speed = 0.5;
+                        fall_speed = difficulty;
                         correct_piece_onboard(&current_piece);       // corrige escape de peças do mapa
                         current_piece.board_y = 0;                   // retorna a peça ao topo
                         current_piece.board_x = BOARD_COLS/2;        // retorna a peça pro centro
                         if(check_collisions(&current_piece, board) == 1){
                             for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
                             board[i] = 0;}
-                            randomize_piece(&current_piece); // reinicia o jogo em caso de derrota
+                            randomize_piece(&current_piece);
+                            points = 0;                      // reinicia o jogo em caso de derrota
                             //falling = 0; // termina o jogo caso a peça inicie em colisão
                         }
 
                         randomize_piece(&current_piece);             // aleatoriza a peça após a queda
-                        clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
+                        points += clear_and_fall_rows(&current_piece, board);  // limpa as fileiras cheias e desce as superiores
                         add_piece_board(&current_piece, board);      // adiciona a peça no topo para manter integridade
                     }
                 }
@@ -156,6 +158,8 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                                   (170 * sprite_scaling) / 16, (330 * sprite_scaling) / 16, 0);
                                             // desenha a borda do tabuleiro
                                             // o (-5) e (+10) são proporções para alinhar o tabuleiro com as peças
+
+            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH - WIDTH/5, HEIGHT - HEIGHT/8, ALLEGRO_ALIGN_CENTER,"points: %04d", points);
 
             al_flip_display(); // Atualiza a tela com o que foi desenhado
         }

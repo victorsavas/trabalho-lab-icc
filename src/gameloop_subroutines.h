@@ -23,7 +23,7 @@ int check_collisions(t_piece *piece, int *board);
 int add_piece_board(t_piece *piece, int *board);
 void remove_piece_board(t_piece *piece, int *board);
 void correct_piece_onboard(t_piece *piece);
-void clear_and_fall_rows(t_piece *piece, int *board);
+int clear_and_fall_rows(t_piece *piece, int *board);
 void fall_upper_rows(int *board, int end_row);
 int clear_full_rows(int *board);
 void randomize_piece(t_piece *piece);
