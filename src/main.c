@@ -22,6 +22,18 @@ int main(){
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);  // 60 quadros por segundo
     ALLEGRO_EVENT ev;         // Estrutura para eventos
 
+    ALLEGRO_FONT *font = al_load_ttf_font("../../fontes/PixelifySans-SemiBold.ttf", 50, 0);
+    if (!font) {
+        printf("Erro ao carregar fonte.\n");
+        return -1;
+    }
+
+    ALLEGRO_FONT *font_small = al_load_ttf_font("../../fontes/PixelifySans-SemiBold.ttf", 35, 0);
+    if (!font_small) {
+        printf("Erro ao carregar fonte.\n");
+        return -1;
+    }
+
     // Registra as fontes de eventos que a fila vai monitorar
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer));
@@ -29,9 +41,7 @@ int main(){
 
     al_start_timer(timer); // inicia o temporizador
 
-    menu(queue, timer, &ev);
-
-//    game_loop(queue, timer, &ev, 0.5); // executa o jogo;
+    main_menu(queue, timer, &ev, font, font_small);
 
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);

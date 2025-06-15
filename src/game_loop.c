@@ -3,7 +3,6 @@
 #include <time.h>                          // necessário para aleatorizar as peças
 #include "gameloop_subroutines.h"
 
-
 void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty)
 {
     // Carrega uma imagem contendo múltimos sprites (spritesheet)
@@ -80,7 +79,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                     add_piece_board(&current_piece, board);             // adiciona a peça
                     fall_timer = 0;                                     // pausa a queda
                  }
-                 else if (ev->keyboard.keycode ==  ALLEGRO_KEY_Z){       // rotaciona a peça
+                 else if (ev->keyboard.keycode ==  ALLEGRO_KEY_Z){      // rotaciona a peça
                     remove_piece_board(&current_piece, board);          // remove peça para evitar conflitos
                     rotate_piece(&current_piece,0);                     // rotaciona a peça
                     if(check_wallkick_collision(&current_piece, board) == 0)    // caso a peça não vá colidir no wallkick
@@ -162,7 +161,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                                             // desenha a borda do tabuleiro
                                             // o (-5) e (+10) são proporções para alinhar o tabuleiro com as peças
 
-            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH - WIDTH/5, HEIGHT - HEIGHT/8, ALLEGRO_ALIGN_CENTER,"points: %04d", points);
+            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH - WIDTH/5, HEIGHT - HEIGHT/8, ALLEGRO_ALIGN_CENTER,"%04d points", points);
 
             al_flip_display(); // Atualiza a tela com o que foi desenhado
         }

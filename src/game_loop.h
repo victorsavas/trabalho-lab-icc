@@ -7,9 +7,19 @@ typedef struct{
     int end_x;
     int end_y;
     int selected;
-
+    ALLEGRO_COLOR default_color;
+    ALLEGRO_COLOR selected_color;
 }   t_button;
 
-void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty);
+typedef struct{
+    int difficulty;
+    int score;
+    char name[20];
 
-int menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev);
+}   t_leaderboard_entry;
+
+int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, ALLEGRO_FONT *font_small);
+void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty);
+void loss_screen(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, ALLEGRO_FONT *font_small);
+
+

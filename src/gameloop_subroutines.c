@@ -3,7 +3,7 @@
 // criação de variáveis para os formatos possíveis de peças
 
 t_piece piece_O = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 0, 0, 0},
@@ -14,7 +14,7 @@ t_piece piece_O = {
 };
 
 t_piece piece_I = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 0, 1, 0},
@@ -25,7 +25,7 @@ t_piece piece_I = {
 };
 
 t_piece piece_J = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {1, 0, 0, 0},
@@ -36,7 +36,7 @@ t_piece piece_J = {
 };
 
 t_piece piece_L = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 0, 1, 0},
@@ -47,7 +47,7 @@ t_piece piece_L = {
 };
 
 t_piece piece_T = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 1, 0, 0},
@@ -58,7 +58,7 @@ t_piece piece_T = {
 };
 
 t_piece piece_S = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 0, 0, 0},
@@ -69,7 +69,7 @@ t_piece piece_S = {
 };
 
 t_piece piece_Z = {
-    .board_x = BOARD_COLS/2,
+    .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
     {0, 0, 0, 0},
