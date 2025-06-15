@@ -51,10 +51,10 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
 
             case ALLEGRO_EVENT_KEY_DOWN:
 
-                if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE)          // termina o jogo
-                    falling = 0;
-
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_LEFT){     // move a peça baseado no input do teclado
+                if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE){          // termina o jogo
+                    if(pause_menu(queue, timer, ev, font) == 1) falling = 0;
+                }
+                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_LEFT){    // move a peça baseado no input do teclado
                     remove_piece_board(&current_piece, board);          // remove a peça antiga
                     current_piece.board_x -= 1;                         // move para a esquerda
                     if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1; // retorna caso nova posição colide
@@ -117,6 +117,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                         current_piece.board_y = 0;                   // retorna a peça ao topo
                         current_piece.board_x = BOARD_COLS/2;        // retorna a peça pro centro
                         if(check_collisions(&current_piece, board) == 1){
+                            loss_screen(queue, timer, ev, font, points);
                             for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
                             board[i] = 0;}
                             randomize_piece(&current_piece);

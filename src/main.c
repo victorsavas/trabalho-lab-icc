@@ -22,13 +22,13 @@ int main(){
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);  // 60 quadros por segundo
     ALLEGRO_EVENT ev;         // Estrutura para eventos
 
-    ALLEGRO_FONT *font = al_load_ttf_font("../../fontes/PixelifySans-SemiBold.ttf", 50, 0);
+    ALLEGRO_FONT *font = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 50, 0);
     if (!font) {
         printf("Erro ao carregar fonte.\n");
         return -1;
     }
 
-    ALLEGRO_FONT *font_small = al_load_ttf_font("../../fontes/PixelifySans-SemiBold.ttf", 35, 0);
+    ALLEGRO_FONT *font_small = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 35, 0);
     if (!font_small) {
         printf("Erro ao carregar fonte.\n");
         return -1;

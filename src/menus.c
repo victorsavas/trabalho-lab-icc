@@ -194,8 +194,145 @@ int leaderboard_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_E
     }
 }
 
-void loss_screen(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, ALLEGRO_FONT *font_small){
+void loss_screen(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, int points){
 
-    // a ser feito
+
+    int running = 1;
+    int redraw = 0;
+
+    while(running == 1){
+
+        redraw = 1;
+
+        al_wait_for_event(queue, ev);   // Aguarda próximo evento na fila
+
+        switch (ev->type) {
+
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:   // termina o jogo caso a janela seja fechada
+                running = 0;
+                break;
+
+            case ALLEGRO_EVENT_KEY_DOWN:
+
+                if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE || ev->keyboard.keycode == ALLEGRO_KEY_X ||
+                    ev->keyboard.keycode == ALLEGRO_KEY_Z || ev->keyboard.keycode == ALLEGRO_KEY_SPACE)  // termina o jogo
+                    running = 0;
+
+                break;
+
+            case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
+                redraw = 1; // Marca que a tela precisa ser redesenhada
+                break;
+        }
+
+        if (redraw == 1 && al_is_event_queue_empty(queue)) { // Redesenho da tela
+            redraw = 0;
+
+//            al_clear_to_color(al_map_rgb(10, 10, 10));  // Limpa a tela com uma cor escura
+
+            al_draw_filled_rounded_rectangle(WIDTH/3 + WIDTH/18, HEIGHT/3 + HEIGHT/15, WIDTH - (WIDTH/3 + WIDTH/18), HEIGHT - (HEIGHT/3 + HEIGHT/15), 0, 0, al_map_rgb(150,10,10));
+
+            al_draw_filled_rounded_rectangle(WIDTH/3 + WIDTH/15, HEIGHT/3 + HEIGHT/12, WIDTH - (WIDTH/3 + WIDTH/15), HEIGHT - (HEIGHT/3 + HEIGHT/12), 0, 0, al_map_rgb(90,6,6));
+
+            al_draw_text(font, al_map_rgb(255,255,255), WIDTH/2,
+                        HEIGHT/3 + HEIGHT/10 , ALLEGRO_ALIGN_CENTER,"GAME OVER");
+
+            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH/2, HEIGHT/2,
+                          ALLEGRO_ALIGN_CENTER,"SCORE: %04d", points);
+            }
+            al_flip_display(); // Atualiza a tela com o que foi desenhado
+    }
+}
+
+int pause_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font){
+
+    int running = 1;
+    int redraw = 0;
+    int selected = 1;
+
+    t_button pause_button[2];
+    pause_button[0] = (t_button){WIDTH/3 + WIDTH/18, HEIGHT/3 + HEIGHT/18, WIDTH - (WIDTH/3 + WIDTH/18), HEIGHT/3 + HEIGHT/18 + HEIGHT/15, 0};
+    pause_button[1] = (t_button){WIDTH/3 + WIDTH/18, HEIGHT/3 + HEIGHT/18 + HEIGHT/15 + HEIGHT/30, WIDTH - (WIDTH/3 + WIDTH/18), HEIGHT/3 + HEIGHT/18 + 2 * HEIGHT/15 + HEIGHT/30, 0};
+
+    pause_button[0].default_color = al_map_rgb(30,30,150);
+    pause_button[0].selected_color = al_map_rgb(15,15,75);
+
+    pause_button[1].default_color = al_map_rgb(30,30,150);
+    pause_button[1].selected_color = al_map_rgb(15,15,75);
+
+
+    while(running == 1){
+
+        redraw = 1;
+
+        al_wait_for_event(queue, ev);   // Aguarda próximo evento na fila
+
+        switch (ev->type) {
+
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:   // termina o jogo caso a janela seja fechada
+                running = 0;
+                break;
+
+            case ALLEGRO_EVENT_KEY_DOWN:
+
+                if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE){
+                    return 0;
+                }
+
+                if (ev->keyboard.keycode == ALLEGRO_KEY_DOWN){
+                    pause_button[selected].selected = 0;
+                    if(selected < 1) selected++;
+                    else selected = 1;
+                    pause_button[selected].selected = 1;
+                }
+
+                if (ev->keyboard.keycode == ALLEGRO_KEY_UP){
+                    pause_button[selected].selected = 0;
+                    if(selected > 0) selected--;
+                    else selected = 0;
+                    pause_button[selected].selected = 1;
+                }
+
+                if (ev->keyboard.keycode == ALLEGRO_KEY_X ||
+                    ev->keyboard.keycode == ALLEGRO_KEY_Z || ev->keyboard.keycode == ALLEGRO_KEY_SPACE){
+                    if(pause_button[0].selected == 1){
+                    running = 0;
+                    return 0; // continua o jogo;
+                    }
+                    if(pause_button[1].selected == 1){
+                    running = 0;
+                    return 1; // volta para o menu;
+                    }
+                }
+
+                break;
+
+            case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
+                redraw = 1; // Marca que a tela precisa ser redesenhada
+                break;
+        }
+
+        if (redraw == 1 && al_is_event_queue_empty(queue)) { // Redesenho da tela
+            redraw = 0;
+
+            if(pause_button[0].selected == 0)
+            al_draw_filled_rounded_rectangle(pause_button[0].origin_x, pause_button[0].origin_y, pause_button[0].end_x, pause_button[0].end_y, 0, 0, pause_button[0].default_color);
+            else if(pause_button[0].selected == 1)
+            al_draw_filled_rounded_rectangle(pause_button[0].origin_x, pause_button[0].origin_y, pause_button[0].end_x, pause_button[0].end_y, 0, 0, pause_button[0].selected_color);
+
+            if(pause_button[1].selected == 0)
+            al_draw_filled_rounded_rectangle(pause_button[1].origin_x, pause_button[1].origin_y, pause_button[1].end_x, pause_button[1].end_y, 0, 0, pause_button[1].default_color);
+            else if(pause_button[1].selected == 1)
+            al_draw_filled_rounded_rectangle(pause_button[1].origin_x, pause_button[1].origin_y, pause_button[1].end_x, pause_button[1].end_y, 0, 0, pause_button[1].selected_color);
+
+            al_draw_text(font, al_map_rgb(255,255,255), WIDTH/2,
+                        ((pause_button[0].end_y - pause_button[0].origin_y) / 2) + pause_button[0].origin_y - HEIGHT/33, ALLEGRO_ALIGN_CENTER,"CONTINUE");
+
+            al_draw_text(font, al_map_rgb(255,255,255), WIDTH/2,
+                        ((pause_button[1].end_y - pause_button[1].origin_y) / 2) + pause_button[1].origin_y - HEIGHT/33, ALLEGRO_ALIGN_CENTER,"EXIT");
+
+            }
+            al_flip_display(); // Atualiza a tela com o que foi desenhado
+    }
 }
 
