@@ -46,18 +46,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/game_loop.h" />
-		<Unit filename="src/gameloop_subroutines.c">
+		<Unit filename="src/gameloop_logic.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/gameloop_subroutines.h" />
+		<Unit filename="src/gameloop_logic.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="src/menus.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/tetris_tmp_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

@@ -1,5 +1,6 @@
+
 #include "allegro_context.h"               // contém todos os includes do allegro
-#include "gameloop_subroutines.h"
+#include "gameloop_logic.h"
 #include "game_loop.h"
 
 int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, ALLEGRO_FONT *font_small){
@@ -7,6 +8,17 @@ int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *e
     int running = 1;
     int redraw = 0;
     int selected = 0;
+
+    //
+
+    // para testar a função
+
+    int points = 1000;
+
+
+    get_new_highscore(queue, timer, ev, font, points);
+
+    //
 
     ALLEGRO_COLOR cor = al_map_rgb(40,100,40);
     ALLEGRO_COLOR cor_select = al_map_rgb(40,100,40);
@@ -49,14 +61,14 @@ int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *e
                 if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE)  // termina o jogo
                     running = 0;
                 if (ev->keyboard.keycode == ALLEGRO_KEY_LEFT){
-                    if(other_button[selected].selected == 0){
+                    if(other_button[0].selected == 0){
                     difficulty_button[selected].selected = 0;
                     if(--selected < 0) selected = 2;
                     difficulty_button[selected].selected = 1;
                     }
                 }
                 if (ev->keyboard.keycode == ALLEGRO_KEY_RIGHT){
-                    if(other_button[selected].selected == 0){
+                    if(other_button[0].selected == 0){
                     difficulty_button[selected].selected = 0;
                     if(++selected > 2) selected = 0;
                     difficulty_button[selected].selected = 1;
@@ -335,4 +347,89 @@ int pause_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
             al_flip_display(); // Atualiza a tela com o que foi desenhado
     }
 }
+
+void get_new_highscore(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, int points){
+
+    int running = 1;
+    int redraw = 0;
+    int i = 0;
+
+    char name[12];
+
+    while(running == 1){
+
+        redraw = 1;
+
+        al_wait_for_event(queue, ev);   // Aguarda próximo evento na fila
+
+        switch (ev->type) {
+
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:   // termina o jogo caso a janela seja fechada
+                running = 0;
+                break;
+
+            case ALLEGRO_EVENT_KEY_CHAR:
+                if(i <= 10){
+
+                if(ev->keyboard.unichar > 47 && ev->keyboard.unichar < 123)
+                name[i++] = ev->keyboard.unichar;
+                }
+
+                if(ev->keyboard.unichar == 127 || ev->keyboard.unichar == 8 && i > 0)
+                name[--i] = 0;
+
+                if(ev->keyboard.unichar == 13 && i > 0){
+
+                    //save_highscore();
+                    return;
+                }
+
+                break;
+
+            case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
+                redraw = 1; // Marca que a tela precisa ser redesenhada
+                break;
+        }
+
+        if (redraw == 1 && al_is_event_queue_empty(queue)) { // Redesenho da tela
+            redraw = 0;
+
+//            al_clear_to_color(al_map_rgb(10, 10, 10));  // Limpa a tela com uma cor escura
+
+            al_draw_filled_rounded_rectangle(WIDTH/3 + WIDTH/28, HEIGHT/3 + HEIGHT/15, WIDTH - (WIDTH/3 + WIDTH/28), HEIGHT - (HEIGHT/3 + HEIGHT/15), 0, 0, al_map_rgb(0,150,0));
+
+            al_draw_filled_rounded_rectangle(WIDTH/3 + WIDTH/23, HEIGHT/3 + HEIGHT/12, WIDTH - (WIDTH/3 + WIDTH/23), HEIGHT - (HEIGHT/3 + HEIGHT/12), 0, 0, al_map_rgb(0,75,0));
+
+            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH/2,
+                        HEIGHT/3 + HEIGHT/10 , ALLEGRO_ALIGN_CENTER,"NEW HIGHSCORE! %d", points);
+
+            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH/2,
+                        HEIGHT/2, ALLEGRO_ALIGN_CENTER,"NAME: %s", name);
+            }
+            al_flip_display(); // Atualiza a tela com o que foi desenhado
+    }
+
+}
+
+
+// incompleto
+/*
+
+void save_highscore(t_leaderboard_entry new_entry){
+
+    FILE *leaderboard;
+    t_topfive_leaderboard difficulty_leaderboards[3];
+
+    leaderboard = fopen("leaderboard.csv", "rt");
+    if(leaderboard == NULL)
+    leaderboard = fopen("leaderboard.csv", "wt");
+
+
+
+
+
+    // difficulty_leaderboards[new_entry.difficulty].entries[0] = new_entry;
+
+
+} */
 

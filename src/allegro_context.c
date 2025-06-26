@@ -1,9 +1,5 @@
 #include "allegro_context.h"
 
-// Constantes de configuração da janela e do sprite
-#define WIDTH  640                         // Largura da janela
-#define HEIGHT 480                         // Altura da janela
-
 AllegroContext allegro_init()
 {
     // Inicializa o Allegro e os módulos necessários

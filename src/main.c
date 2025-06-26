@@ -1,5 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "allegro_context.h"               // contém todos os includes do allegro
-#include "gameloop_subroutines.h"
+#include "gameloop_logic.h"
 #include "game_loop.h"
 
 int main(){
@@ -41,10 +43,11 @@ int main(){
 
     al_start_timer(timer); // inicia o temporizador
 
+    int points = 0;
+
     main_menu(queue, timer, &ev, font, font_small);
 
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
     al_destroy_display(display);
 }
-

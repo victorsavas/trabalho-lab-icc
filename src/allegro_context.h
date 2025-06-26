@@ -1,7 +1,9 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>                          // necessário para aleatorizar as peças
-#include "gameloop_subroutines.h"          // lógica do loop de eventos
+#include "gameloop_logic.h"          // lógica do loop de eventos
 
 // Inclusão das bibliotecas necessárias para cada funcionalidade utilizada
 #include <allegro5/allegro.h>              // Biblioteca principal do Allegro

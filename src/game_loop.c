@@ -1,7 +1,7 @@
-#include "game_loop.h"
-#include "allegro_context.h"               // contém todos os includes do allegro
 #include <time.h>                          // necessário para aleatorizar as peças
-#include "gameloop_subroutines.h"
+#include "allegro_context.h"               // contém todos os includes do allegro
+#include "game_loop.h"
+#include "gameloop_logic.h"
 
 void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty)
 {
