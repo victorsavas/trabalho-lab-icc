@@ -159,11 +159,11 @@ int leaderboard_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_E
 
     t_leaderboard_entry leaderboard_entries[5];
 
-    leaderboard_entries[0] = (t_leaderboard_entry) {0, 200,{'A','B','C','\0'}};
-    leaderboard_entries[1] = (t_leaderboard_entry) {0, 200000,{'A','D','F','B','C','\0'}};
-    leaderboard_entries[2] = (t_leaderboard_entry) {0, 200234,{'B','J','I','\0'}};
-    leaderboard_entries[3] = (t_leaderboard_entry) {0, 1,{'V','2','L','\0'}};
-    leaderboard_entries[4] = (t_leaderboard_entry) {0, 1,{'V','2','L','\0'}};
+    leaderboard_entries[0] = (t_leaderboard_entry) {0, 200,{"PLACEHOLDER"}};
+    leaderboard_entries[1] = (t_leaderboard_entry) {0, 200000,{"PLACEHOLDER"}};
+    leaderboard_entries[2] = (t_leaderboard_entry) {0, 200234,{"PLACEHOLDER"}};
+    leaderboard_entries[3] = (t_leaderboard_entry) {0, 1,{"PLACEHOLDER"}};
+    leaderboard_entries[4] = (t_leaderboard_entry) {0, 1,{"PLACEHOLDER"}};
 
     while(running == 1){
 
@@ -200,7 +200,7 @@ int leaderboard_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_E
 
             for(int i=0; i<5; i++){
             al_draw_textf(font_small, al_map_rgb(255,255,255), WIDTH/4 + WIDTH/25, HEIGHT/5 + 50 * i,
-                          ALLEGRO_ALIGN_CENTER,"%04d | %s", leaderboard_entries[i].score, leaderboard_entries[i].name);
+                          ALLEGRO_ALIGN_CENTER,"%s | %04d", leaderboard_entries[i].name, leaderboard_entries[i].score);
             }
             al_flip_display(); // Atualiza a tela com o que foi desenhado
         }
