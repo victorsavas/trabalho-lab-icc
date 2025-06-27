@@ -20,6 +20,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
     int fall_timer = 0; // usado para queda de blocos
     int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
     int points = 0; // pontuação do usuário
+    int highscore_holder = 0;
     float fall_speed = difficulty;    // maior diminui a velocidade, menor aumenta
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
@@ -121,6 +122,10 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                             for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
                             board[i] = 0;}
                             randomize_piece(&current_piece);
+                            if(highscore_holder < points){
+                                highscore_holder = points;
+                                get_new_highscore(queue, timer, ev, font, points);
+                            }
                             points = 0;                      // reinicia o jogo em caso de derrota
                             //falling = 0; // termina o jogo caso a peça inicie em colisão
                         }

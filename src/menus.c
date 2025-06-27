@@ -9,7 +9,7 @@ int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *e
     int redraw = 0;
     int selected = 0;
 
-    //
+    /*
 
     // para testar a função
 
@@ -18,7 +18,8 @@ int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *e
 
     get_new_highscore(queue, timer, ev, font, points);
 
-    //
+
+    */
 
     ALLEGRO_COLOR cor = al_map_rgb(40,100,40);
     ALLEGRO_COLOR cor_select = al_map_rgb(40,100,40);
