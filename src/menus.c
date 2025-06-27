@@ -115,26 +115,21 @@ int main_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *e
 
             al_clear_to_color(al_map_rgb(10, 10, 10));  // Limpa a tela com uma cor escura
 
-            if(difficulty_button[0].selected == 0)
-            al_draw_filled_rounded_rectangle(difficulty_button[0].origin_x, difficulty_button[0].origin_y, difficulty_button[0].end_x, difficulty_button[0].end_y, 2, 2, difficulty_button[0].default_color);
-            else if(difficulty_button[0].selected == 1)
-            al_draw_filled_rounded_rectangle(difficulty_button[0].origin_x, difficulty_button[0].origin_y, difficulty_button[0].end_x, difficulty_button[0].end_y, 2, 2, difficulty_button[0].selected_color);
+            for(int i=0; i<3; i++){
+                if(difficulty_button[i].selected == 0)
+                al_draw_filled_rounded_rectangle(difficulty_button[i].origin_x, difficulty_button[i].origin_y, difficulty_button[i].end_x, difficulty_button[i].end_y, 2, 2, difficulty_button[i].default_color);
+                else if(difficulty_button[i].selected == 1)
+                al_draw_filled_rounded_rectangle(difficulty_button[i].origin_x, difficulty_button[i].origin_y, difficulty_button[i].end_x, difficulty_button[i].end_y, 2, 2, difficulty_button[i].selected_color);
+            }
+
 
             al_draw_text(font, al_map_rgb(255,255,255), difficulty_button[0].origin_x + WIDTH/10,
                         ((difficulty_button[0].end_y + difficulty_button[0].origin_y) / 2) - difficulty_button[0].origin_y / 10, ALLEGRO_ALIGN_CENTER,"EASY");
 
-            if(difficulty_button[1].selected == 0)
-            al_draw_filled_rounded_rectangle(difficulty_button[1].origin_x, difficulty_button[1].origin_y, difficulty_button[1].end_x, difficulty_button[1].end_y, 2, 2, difficulty_button[1].default_color);
-            else if(difficulty_button[1].selected == 1)
-            al_draw_filled_rounded_rectangle(difficulty_button[1].origin_x, difficulty_button[1].origin_y, difficulty_button[1].end_x, difficulty_button[1].end_y, 2, 2, difficulty_button[1].selected_color);
 
             al_draw_text(font, al_map_rgb(255,255,255), difficulty_button[1].origin_x + WIDTH/10,
                         ((difficulty_button[1].end_y + difficulty_button[1].origin_y) / 2) - difficulty_button[1].origin_y / 10, ALLEGRO_ALIGN_CENTER,"MEDIUM");
 
-            if(difficulty_button[2].selected == 0)
-            al_draw_filled_rounded_rectangle(difficulty_button[2].origin_x, difficulty_button[2].origin_y, difficulty_button[2].end_x, difficulty_button[2].end_y, 2, 2, difficulty_button[2].default_color);
-            else if(difficulty_button[2].selected == 1)
-            al_draw_filled_rounded_rectangle(difficulty_button[2].origin_x, difficulty_button[2].origin_y, difficulty_button[2].end_x, difficulty_button[2].end_y, 2, 2, difficulty_button[2].selected_color);
 
             al_draw_text(font, al_map_rgb(255,255,255), difficulty_button[2].origin_x + WIDTH/10,
                         ((difficulty_button[2].end_y + difficulty_button[2].origin_y) / 2) - difficulty_button[2].origin_y / 10, ALLEGRO_ALIGN_CENTER,"HARD");
@@ -328,15 +323,12 @@ int pause_menu(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
         if (redraw == 1 && al_is_event_queue_empty(queue)) { // Redesenho da tela
             redraw = 0;
 
-            if(pause_button[0].selected == 0)
-            al_draw_filled_rounded_rectangle(pause_button[0].origin_x, pause_button[0].origin_y, pause_button[0].end_x, pause_button[0].end_y, 0, 0, pause_button[0].default_color);
-            else if(pause_button[0].selected == 1)
-            al_draw_filled_rounded_rectangle(pause_button[0].origin_x, pause_button[0].origin_y, pause_button[0].end_x, pause_button[0].end_y, 0, 0, pause_button[0].selected_color);
-
-            if(pause_button[1].selected == 0)
-            al_draw_filled_rounded_rectangle(pause_button[1].origin_x, pause_button[1].origin_y, pause_button[1].end_x, pause_button[1].end_y, 0, 0, pause_button[1].default_color);
-            else if(pause_button[1].selected == 1)
-            al_draw_filled_rounded_rectangle(pause_button[1].origin_x, pause_button[1].origin_y, pause_button[1].end_x, pause_button[1].end_y, 0, 0, pause_button[1].selected_color);
+            for(int i=0; i<2; i++){
+                if(pause_button[i].selected == 0)
+                al_draw_filled_rounded_rectangle(pause_button[i].origin_x, pause_button[i].origin_y, pause_button[i].end_x, pause_button[i].end_y, 0, 0, pause_button[i].default_color);
+                else if(pause_button[i].selected == 1)
+                al_draw_filled_rounded_rectangle(pause_button[i].origin_x, pause_button[i].origin_y, pause_button[i].end_x, pause_button[i].end_y, 0, 0, pause_button[i].selected_color);
+            }
 
             al_draw_text(font, al_map_rgb(255,255,255), WIDTH/2,
                         ((pause_button[0].end_y - pause_button[0].origin_y) / 2) + pause_button[0].origin_y - HEIGHT/33, ALLEGRO_ALIGN_CENTER,"CONTINUE");
