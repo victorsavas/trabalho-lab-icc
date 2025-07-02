@@ -38,9 +38,6 @@
 		<Compiler>
 			<Add directory="allegro/include" />
 		</Compiler>
-		<Unit filename="src/allegro_context.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/allegro_context.h" />
 		<Unit filename="src/game_loop.c">
 			<Option compilerVar="CC" />

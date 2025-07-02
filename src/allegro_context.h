@@ -17,14 +17,11 @@
 #include <allegro5/keyboard.h>             // Suporte ao teclado
 // struct contendo as estruturas empregadas pela Allegro
 
-struct allegro_context_t {
+typedef struct {
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *queue;
     ALLEGRO_TIMER *timer;
-    ALLEGRO_EVENT event;
-};
-
-typedef struct allegro_context_t AllegroContext;
-
-AllegroContext allegro_init();
-void allegro_free(AllegroContext allegro);
+    ALLEGRO_EVENT ev;
+    ALLEGRO_FONT *font;
+    ALLEGRO_FONT *small_font;
+} t_allegro_context;

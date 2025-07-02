@@ -17,10 +17,10 @@ t_piece piece_I = {
     .board_x = BOARD_COLS/3,
     .board_y = 0,
     .shape = {
-    {0, 0, 1, 0},
-    {0, 0, 1, 0},
-    {0, 0, 1, 0},
-    {0, 0, 1, 0}
+    {0, 0, 0, 0},
+    {1, 1, 1, 1},
+    {0, 0, 0, 0},
+    {0, 0, 0, 0}
     }       // formato da peça na matriz shape
 };
 

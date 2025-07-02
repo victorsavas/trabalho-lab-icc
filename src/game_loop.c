@@ -3,13 +3,17 @@
 #include "game_loop.h"
 #include "gameloop_logic.h"
 
-void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *ev, ALLEGRO_FONT *font, float difficulty)
-{
+void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *difficulty_entries, float difficulty, int difficulty_level){
+
+    ALLEGRO_EVENT ev = allegro_contexts.ev;
+
     // Carrega uma imagem contendo múltimos sprites (spritesheet)
     ALLEGRO_BITMAP *piece_sprite = al_load_bitmap("../../sprites/tetris_sprite_16x16.png");
     ALLEGRO_BITMAP *board_sprite = al_load_bitmap("../../sprites/borda_tetris_170x330.png");
+    ALLEGRO_BITMAP *keybind_sprite = al_load_bitmap("../../sprites/keybind_sprite_48x288.png");
     al_convert_mask_to_alpha(piece_sprite, al_map_rgb(0, 0, 0));
     al_convert_mask_to_alpha(board_sprite, al_map_rgb(0, 0, 0));
+    al_convert_mask_to_alpha(keybind_sprite, al_map_rgb(0, 0, 0));
 
     // Variáveis de controle da aplicação
     int falling = 1;      // Indica se a aplicação deve continuar executando
@@ -18,10 +22,18 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
     int board[BOARD_ROWS * BOARD_COLS]; // definido no gameloop.h
     int cleared_row = 0; // usado na função de descer as fileiras limpas
     int fall_timer = 0; // usado para queda de blocos
-    int sprite_scaling = (HEIGHT * 40) / 1000; // usado para alterar o tamanho dos sprites
+    int sprite_scaling;// usado para alterar o tamanho dos sprites
     int points = 0; // pontuação do usuário
-    int highscore_holder = 0;
+    int dont_show_keybinds_again = 0;
     float fall_speed = difficulty;    // maior diminui a velocidade, menor aumenta
+
+    if(HEIGHT < WIDTH){               // escala os sprites baseado no menor para manter proporção
+        sprite_scaling = HEIGHT / 25;
+    }
+    else{
+        sprite_scaling = WIDTH / 37.5F;
+    }
+
 
     for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){ // preencher tabuleiro base com vazio
         board[i] = 0;
@@ -40,36 +52,38 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
 
     while (falling == 1) {         // Loop principal do jogo
 
-        al_wait_for_event(queue, ev);   // Aguarda próximo evento na fila
+        al_wait_for_event(allegro_contexts.queue, &ev);   // Aguarda próximo evento na fila
 
        // remove_piece_board(&current_piece, board); // corrige o erro de sobreposição das peças
 
         // Tratamento dos eventos recebidos
-        switch (ev->type) {
+        switch (ev.type) {
             case ALLEGRO_EVENT_DISPLAY_CLOSE:   // termina o jogo caso a janela seja fechada
                 falling = false;
                 break;
 
             case ALLEGRO_EVENT_KEY_DOWN:
 
-                if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE){          // termina o jogo
-                    if(pause_menu(queue, timer, ev, font) == 1) falling = 0;
+                if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE){          // termina o jogo
+                    if(points > 0 || dont_show_keybinds_again == 1)
+                    draw_keybinds(allegro_contexts, sprite_scaling, keybind_sprite);
+                    if(pause_menu(allegro_contexts) == 1) falling = 0;
                 }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_LEFT){    // move a peça baseado no input do teclado
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_LEFT){    // move a peça baseado no input do teclado
                     remove_piece_board(&current_piece, board);          // remove a peça antiga
                     current_piece.board_x -= 1;                         // move para a esquerda
                     if(check_collisions(&current_piece, board) == 1) current_piece.board_x += 1; // retorna caso nova posição colide
                     add_piece_board(&current_piece, board);             // adiciona a peça de volta
                     fall_timer = 0;                                     // segura a peça após um movimento
                     }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a peça baseado no input do teclado
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_RIGHT){    // move a peça baseado no input do teclado
                     remove_piece_board(&current_piece, board);          // remove a peça antiga
                     current_piece.board_x += 1;                         // move para a direita
                     if(check_collisions(&current_piece, board) == 1) current_piece.board_x -= 1; // retorna caso nova posição colide
                     add_piece_board(&current_piece, board);             // adiciona a peça de volta
                     fall_timer = 0;                                     // segura a queda após um movimento
                     }
-                 else if (ev->keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a peça
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_X){       // rotaciona a peça
                     remove_piece_board(&current_piece, board);          // remove peça para evitar conflitos
                     rotate_piece(&current_piece,1);                     // rootaciona a peça
                     if(check_wallkick_collision(&current_piece, board) == 0)    // caso a peça não vá colidir no wallkick
@@ -80,7 +94,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                     add_piece_board(&current_piece, board);             // adiciona a peça
                     fall_timer = 0;                                     // pausa a queda
                  }
-                 else if (ev->keyboard.keycode ==  ALLEGRO_KEY_Z){      // rotaciona a peça
+                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_Z){      // rotaciona a peça
                     remove_piece_board(&current_piece, board);          // remove peça para evitar conflitos
                     rotate_piece(&current_piece,0);                     // rotaciona a peça
                     if(check_wallkick_collision(&current_piece, board) == 0)    // caso a peça não vá colidir no wallkick
@@ -91,17 +105,17 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                     add_piece_board(&current_piece, board);             // adiciona a peça
                     fall_timer = 0;                                     // pausa a queda
                  }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peça descer bem rápido
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peça descer bem rápido
                     fall_speed = 1/FPS;                                 // aumenta velocidade de queda enquanto segurado
                 }
-                else if (ev->keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
                     while(fall_piece(&current_piece, board) == 0);                                // aumenta velocidade de queda enquanto segurado
                 }
                 break;
 
             case ALLEGRO_EVENT_KEY_UP:
 
-                if (ev->keyboard.keycode == ALLEGRO_KEY_DOWN)
+                if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
                     fall_speed = difficulty;
 
             case ALLEGRO_EVENT_TIMER: // controla os eventos por frame do jogo
@@ -113,21 +127,26 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                 if(fall_timer > (FPS * fall_speed)){                       // timer de queda para as peças
                     fall_timer = 0;
                     if(fall_piece(&current_piece, board) == 1){      // faz as peças cairem, testa se chegaram no fundo
+
                         fall_speed = difficulty;
                         correct_piece_onboard(&current_piece);       // corrige escape de peças do mapa
                         current_piece.board_y = 0;                   // retorna a peça ao topo
                         current_piece.board_x = BOARD_COLS/2;        // retorna a peça pro centro
-                        if(check_collisions(&current_piece, board) == 1){
-                            loss_screen(queue, timer, ev, font, points);
+
+                        if(check_collisions(&current_piece, board) == 1){ // situação de derrota
+
+                            loss_screen(allegro_contexts,points);
+                            if (highscore_comparison(difficulty_entries, points, difficulty_level) == 1){
+                                    get_new_highscore(allegro_contexts, points, difficulty_level, difficulty_entries);
+                                    // debug_leaderboard(difficulty_entries);
+                                }
+
                             for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++){
-                            board[i] = 0;}
-                            randomize_piece(&current_piece);
-                            if(highscore_holder < points){
-                                highscore_holder = points;
-                                get_new_highscore(queue, timer, ev, font, points);
+                            board[i] = 0;
                             }
+                            randomize_piece(&current_piece);
                             points = 0;                      // reinicia o jogo em caso de derrota
-                            //falling = 0; // termina o jogo caso a peça inicie em colisão
+                            dont_show_keybinds_again = 1;
                         }
 
                         randomize_piece(&current_piece);             // aleatoriza a peça após a queda
@@ -140,7 +159,7 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                 correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
 
 
-        if (redraw && al_is_event_queue_empty(queue)) { // Redesenho da tela
+        if (redraw && al_is_event_queue_empty(allegro_contexts.queue)) { // Redesenho da tela
             redraw = false;
 
             al_clear_to_color(al_map_rgb(10, 10, 10));  // Limpa a tela com uma cor escura
@@ -167,7 +186,11 @@ void game_loop(ALLEGRO_EVENT_QUEUE *queue, ALLEGRO_TIMER *timer, ALLEGRO_EVENT *
                                             // desenha a borda do tabuleiro
                                             // o (-5) e (+10) são proporções para alinhar o tabuleiro com as peças
 
-            al_draw_textf(font, al_map_rgb(255,255,255), WIDTH - WIDTH/5, HEIGHT - HEIGHT/8, ALLEGRO_ALIGN_CENTER,"%04d points", points);
+            al_draw_textf(allegro_contexts.font, al_map_rgb(255,255,255), WIDTH - WIDTH/5, HEIGHT - HEIGHT/8, ALLEGRO_ALIGN_CENTER,"%04d points", points);
+
+            if(points == 0 && dont_show_keybinds_again == 0){
+                draw_keybinds(allegro_contexts, sprite_scaling, keybind_sprite);
+            }
 
             al_flip_display(); // Atualiza a tela com o que foi desenhado
         }
