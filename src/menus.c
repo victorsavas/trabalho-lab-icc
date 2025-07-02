@@ -528,11 +528,11 @@ void draw_keybinds(t_allegro_context allegro_contexts, int sprite_scaling, ALLEG
     for(int i=0; i<2; i++){
         for(int j=3; j>0; j--){
             al_draw_scaled_bitmap(keybind_sprite, sprite_x, sprite_y * 48, 48, 48,
-                                         WIDTH + WIDTH/30 - (j * 4.5f * sprite_scaling), HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)),
+                                         WIDTH - (j * 4.5f * sprite_scaling), HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)),
                                           2 * sprite_scaling, 2 * sprite_scaling, 0);
                                             // desenha o botão baseado na escala definida
 
-            al_draw_textf(allegro_contexts.small_font, al_map_rgb(255,255,255), WIDTH + WIDTH/30 - ((j * 4.5f * sprite_scaling) - (sprite_scaling)),
+            al_draw_textf(allegro_contexts.small_font, al_map_rgb(255,255,255), WIDTH - ((j * 4.5f * sprite_scaling) - (sprite_scaling)),
                           HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + (HEIGHT / 12), ALLEGRO_ALIGN_CENTER,"%s", keybind_names[sprite_y]);
 
             sprite_y++; // define o botão de acordo com o sprite
