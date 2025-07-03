@@ -27,7 +27,7 @@ int main(){
         printf("SEND SCREEN WIDTH AND HEIGHT\n");
         fgets(manual_wh,15, stdin);
         if(sscanf(manual_wh, "%d %d", &WIDTH, &HEIGHT) != 2){
-            printf("INVALID INPUT\N");
+            printf("INVALID INPUT\n");
             return -1;
         }
     }

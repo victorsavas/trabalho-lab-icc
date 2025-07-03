@@ -11,9 +11,11 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
     ALLEGRO_BITMAP *piece_sprite = al_load_bitmap("../../sprites/tetris_sprite_16x16.png");
     ALLEGRO_BITMAP *board_sprite = al_load_bitmap("../../sprites/borda_tetris_170x330.png");
     ALLEGRO_BITMAP *keybind_sprite = al_load_bitmap("../../sprites/keybind_sprite_48x288.png");
+    ALLEGRO_BITMAP *store_piece_sprite = al_load_bitmap("../../sprites/guardar_peca_moldura_98x82.png");
     al_convert_mask_to_alpha(piece_sprite, al_map_rgb(0, 0, 0));
     al_convert_mask_to_alpha(board_sprite, al_map_rgb(0, 0, 0));
     al_convert_mask_to_alpha(keybind_sprite, al_map_rgb(0, 0, 0));
+    al_convert_mask_to_alpha(store_piece_sprite, al_map_rgb(0, 0, 0));
 
     // Variáveis de controle da aplicação
     int falling = 1;      // Indica se a aplicação deve continuar executando
@@ -25,6 +27,7 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
     int sprite_scaling;// usado para alterar o tamanho dos sprites
     int points = 0; // pontuação do usuário
     int dont_show_keybinds_again = 0;
+    int is_fullscreen = 0;
     float fall_speed = difficulty;    // maior diminui a velocidade, menor aumenta
 
     if(HEIGHT < WIDTH){               // escala os sprites baseado no menor para manter proporção
@@ -108,8 +111,19 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_DOWN){     // faz a peça descer bem rápido
                     fall_speed = 1/FPS;                                 // aumenta velocidade de queda enquanto segurado
                 }
+
                 else if (ev.keyboard.keycode ==  ALLEGRO_KEY_SPACE){     // faz a peça descer bem rápido
                     while(fall_piece(&current_piece, board) == 0);                                // aumenta velocidade de queda enquanto segurado
+                }
+
+                else if (ev.keyboard.keycode ==  ALLEGRO_KEY_F4){     // faz a peça descer bem rápido
+                    if(is_fullscreen){
+                        go_fullscreen(allegro_contexts, 0);
+                        is_fullscreen = 0;
+                    }
+                    else
+                        go_fullscreen(allegro_contexts, 1);
+                        is_fullscreen = 1;                       // aumenta velocidade de queda enquanto segurado
                 }
                 break;
 
@@ -156,7 +170,9 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
                 }
                 break;
         }
-                correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
+
+
+        correct_piece_onboard(&current_piece); // corrige escape de peças do mapa
 
 
         if (redraw && al_is_event_queue_empty(allegro_contexts.queue)) { // Redesenho da tela
@@ -196,6 +212,7 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
         }
     }
 
+/*
     // debug do tabuleiro no console
     for(int i=0; i<BOARD_ROWS; i++){
         for(int j=0; j<BOARD_COLS; j++){
@@ -203,5 +220,6 @@ void game_loop(t_allegro_context allegro_contexts, t_topfive_leaderboard *diffic
         }
         printf("\n");
     }
+*/
 
 }

@@ -516,28 +516,48 @@ void draw_keybinds(t_allegro_context allegro_contexts, int sprite_scaling, ALLEG
     int sprite_x = 0;        // Coordenada X no sprite, sempre 0
     int sprite_y = 0;        // Coordenada Y no sprite, 0, 1, 2, 3, 4, 5 de acordo com o botão
 
-    char keybind_names[6][15] = {
+    char keybind_names[8][15] = {
     "RIGHT ARROW",
     "LEFT ARROW",
     "DOWN ARROW",
     "SPACEBAR",
     " Z X ",
-    "ESCAPE"
+    "ESCAPE",
+    " C ",
+    " F4 "
     };
 
-    for(int i=0; i<2; i++){
-        for(int j=3; j>0; j--){
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
             al_draw_scaled_bitmap(keybind_sprite, sprite_x, sprite_y * 48, 48, 48,
-                                         WIDTH - (j * 4.5f * sprite_scaling), HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)),
+                                         (j * 4.5f * sprite_scaling), HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)),
                                           2 * sprite_scaling, 2 * sprite_scaling, 0);
                                             // desenha o botão baseado na escala definida
 
-            al_draw_textf(allegro_contexts.small_font, al_map_rgb(255,255,255), WIDTH - ((j * 4.5f * sprite_scaling) - (sprite_scaling)),
+            al_draw_textf(allegro_contexts.small_font, al_map_rgb(255,255,255), ((j * 4.5f * sprite_scaling) + (sprite_scaling)),
                           HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + (HEIGHT / 12), ALLEGRO_ALIGN_CENTER,"%s", keybind_names[sprite_y]);
 
             sprite_y++; // define o botão de acordo com o sprite
+
+            if(sprite_y > 7) break;
         }
     }
+}
+
+void go_fullscreen(t_allegro_context allegro_contexts, int is_fullscreen){
+
+    if(!is_fullscreen){
+        al_destroy_display(allegro_contexts.display);
+        al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
+        allegro_contexts.display = al_create_display(WIDTH, HEIGHT);
+    }
+    else if(is_fullscreen){
+
+        al_destroy_display(allegro_contexts.display);
+        al_set_new_display_flags(ALLEGRO_WINDOWED);
+        allegro_contexts.display = al_create_display(WIDTH, HEIGHT);
+    }
+   // Cria uma janela com as dimensões especificada
 
 }
 

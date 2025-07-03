@@ -41,3 +41,5 @@ void debug_leaderboard(t_topfive_leaderboard difficulty_entries[]);
 void save_highscore(t_leaderboard_entry new_entry, t_topfive_leaderboard difficulty_entries[]);
 
 int highscore_comparison(t_topfive_leaderboard difficulty_entries[], int points, int difficulty_level);
+
+void go_fullscreen(t_allegro_context allegro_contexts, int is_fullscreen);
