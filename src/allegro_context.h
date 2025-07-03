@@ -13,8 +13,8 @@
 
 // Macros contendo as dimensões da janela
 
-#define WINDOW_WIDTH  1080
-#define WINDOW_HEIGHT 720
+#define WIDTH  1080
+#define HEIGHT 720
 
 // struct contendo as estruturas empregadas pela Allegro
 
@@ -23,6 +23,14 @@ typedef struct AllegroContext {
     ALLEGRO_EVENT_QUEUE *queue;
     ALLEGRO_TIMER *timer;
     ALLEGRO_EVENT event;
+
+    ALLEGRO_FONT *font;
+    ALLEGRO_FONT *font_small;
+
+    ALLEGRO_BITMAP *bitmap_blocks;
+    ALLEGRO_BITMAP *bitmap_playfield;
+    ALLEGRO_BITMAP *bitmap_keybinds;
+
     int redraw;
 } AllegroContext;
 

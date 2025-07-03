@@ -3,8 +3,19 @@
 
 int main()
 {
+    srand(time(NULL));
+
     AllegroContext *allegro = allegro_init();
     Input *input = input_init();
+
+    // Teste de validação
+
+    if (allegro == NULL || input == NULL) {
+        allegro_free(allegro);
+        input_free(input);
+
+        return 1;
+    }
 
     game_loop(allegro, input);
 

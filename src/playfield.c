@@ -1,13 +1,18 @@
 #include <stdlib.h>
 #include "game.h"
+#include "global_state.h"
 
 #define BLOCK_LENGTH 30
 
 #define PLAYFIELD_WIDTH  BLOCK_LENGTH * 10
 #define PLAYFIELD_HEIGHT BLOCK_LENGTH * 20
 
-#define PLAYFIELD_X (WINDOW_WIDTH  -  PLAYFIELD_WIDTH) / 2
-#define PLAYFIELD_Y (WINDOW_HEIGHT - PLAYFIELD_HEIGHT) / 2
+#define PLAYFIELD_X (WIDTH  - PLAYFIELD_WIDTH) / 2
+#define PLAYFIELD_Y (HEIGHT - PLAYFIELD_HEIGHT) / 2
+
+#define NEXT_TIME 1.0
+#define HOR_TIME  0.05
+#define FAST_FALL 0.05
 
 typedef enum TetrominoType {
     TETROMINO_I=0,
@@ -18,6 +23,8 @@ typedef enum TetrominoType {
     TETROMINO_T,
     TETROMINO_Z
 } TetrominoType;
+
+double fall_time_difficulty_table[3] = {1.0, 0.2, 0.08};
 
 // Tabelas de referência para o algorítmo SRS de rotação.
 // Rotações positivas são em sentido horário
@@ -81,23 +88,29 @@ typedef struct Playfield {
     int board[200];
 
     unsigned int lines_cleared;
-    unsigned int score;
+    unsigned int points;
 
-    double piece_fall_timer;
+    double fall_timer;
+    double next_timer;
 
-    double piece_horizontal_move_timer;
-    double piece_fast_fall_timer;
+    double horizontal_move_timer;
+    double fast_fall_timer;
 } Playfield;
 
 static Tetromino tetromino_rotate_counterclockwise(Tetromino *tetromino);
 static Tetromino tetromino_rotate_clockwise(Tetromino *tetromino);
 
 static int tetromino_collision_check(Playfield *playfield, Tetromino tetromino, int x_offset, int y_offset);
-static void tetromino_next(Playfield *playfield, Tetromino *tetromino);
+static int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *updated_tetromino);
 
 static void tetromino_wall_kick(Playfield *playfield, Tetromino *tetromino, Tetromino updated_tetromino, int rotation);
 
-static void draw_playfield(Playfield playfield, Tetromino tetromino);
+static void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetromino);
+
+static GameMode pause_menu(AllegroContext *allegro, Input *input);
+static void draw_keybinds(AllegroContext *allegro, int sprite_scaling);
+
+static void loss_screen(AllegroContext *allegro, Input *input, int points);
 
 static const Tetromino tetromino_table[7] = {
 
@@ -126,8 +139,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            1,0,0,0,
-            1,1,1,0,
+            2,0,0,0,
+            2,2,2,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -142,8 +155,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            0,0,1,0,
-            1,1,1,0,
+            0,0,3,0,
+            3,3,3,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -158,8 +171,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            1,1,0,0,
-            1,1,0,0,
+            4,4,0,0,
+            4,4,0,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -174,8 +187,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            0,1,1,0,
-            1,1,0,0,
+            0,5,5,0,
+            5,5,0,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -190,8 +203,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            0,1,0,0,
-            1,1,1,0,
+            0,6,0,0,
+            6,6,6,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -206,8 +219,8 @@ static const Tetromino tetromino_table[7] = {
         .state = 0,
 
         .shape = {
-            1,1,0,0,
-            0,1,1,0,
+            7,7,0,0,
+            0,7,7,0,
             0,0,0,0,
             0,0,0,0
         }
@@ -326,7 +339,7 @@ int tetromino_collision_check(Playfield *playfield, Tetromino tetromino, int x_o
     return 0;
 }
 
-void tetromino_next(Playfield *playfield, Tetromino *tetromino)
+int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *updated_tetromino)
 {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -339,11 +352,15 @@ void tetromino_next(Playfield *playfield, Tetromino *tetromino)
             int x = tetromino->x + i;
             int y = tetromino->y + j;
 
+            if (x < 0 || x >= 10 || y < 0 || y >= 20) {
+                return 1;
+            }
+
             playfield->board[x + y * 10] = color;
         }
     }
 
-    *tetromino = tetromino_table[TETROMINO_O];
+    *tetromino = tetromino_table[rand() % 7];
 
     // Verificando se há linhas preenchidas
 
@@ -382,6 +399,15 @@ void tetromino_next(Playfield *playfield, Tetromino *tetromino)
     }
 
     playfield->lines_cleared += lines_cleared;
+    playfield->points += lines_cleared * 100;
+
+    *updated_tetromino = *tetromino;
+
+    if (tetromino_collision_check(playfield, *updated_tetromino, 0, 0)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 void tetromino_wall_kick(Playfield *playfield, Tetromino *tetromino, Tetromino updated_tetromino, int rotation)
@@ -426,19 +452,62 @@ void tetromino_wall_kick(Playfield *playfield, Tetromino *tetromino, Tetromino u
     }
 }
 
-void draw_playfield(Playfield playfield, Tetromino tetromino)
+void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetromino)
 {
-    ALLEGRO_COLOR red = al_map_rgb(255, 0, 0);
+    al_draw_scaled_bitmap(
+        allegro->bitmap_playfield,
+        0,
+        0,
+        170,
+        330,
+        PLAYFIELD_X - BLOCK_LENGTH * 5 / 16,
+        PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16,
+        PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8,
+        PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8,
+        0
+    );
 
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 20; j++) {
-            if (playfield.board[i + 10 * j]) {
+            int color = playfield.board[i + 10 * j];
+
+            if (color != 0) {
+                al_draw_scaled_bitmap(
+                    allegro->bitmap_blocks,
+                    0,
+                    16 * (color - 1),
+                    16,
+                    16,
+                    PLAYFIELD_X + i * BLOCK_LENGTH,
+                    PLAYFIELD_Y + j * BLOCK_LENGTH,
+                    BLOCK_LENGTH,
+                    BLOCK_LENGTH,
+                    0
+                );
+            }
+        }
+    }
+
+    Tetromino ghost_tetromino = tetromino;
+
+    for (int i = 0; i < 20; i++) {
+        if (tetromino_collision_check(&playfield, ghost_tetromino, 0, 1)) {
+            break;
+        }
+        ghost_tetromino.y++;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int color = ghost_tetromino.shape[i + 4 * j];
+
+            if (color != 0) {
                 al_draw_filled_rectangle(
-                PLAYFIELD_X + i * BLOCK_LENGTH,
-                PLAYFIELD_Y + j * BLOCK_LENGTH,
-                PLAYFIELD_X + (i + 1) * BLOCK_LENGTH,
-                PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH,
-                red
+                    PLAYFIELD_X + (i + ghost_tetromino.x) * BLOCK_LENGTH,
+                    PLAYFIELD_Y + (j + ghost_tetromino.y) * BLOCK_LENGTH,
+                    PLAYFIELD_X + (i + ghost_tetromino.x + 1) * BLOCK_LENGTH,
+                    PLAYFIELD_Y + (j + ghost_tetromino.y + 1) * BLOCK_LENGTH,
+                    al_map_rgb(39, 37, 115)
                 );
             }
         }
@@ -446,33 +515,42 @@ void draw_playfield(Playfield playfield, Tetromino tetromino)
 
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            if (tetromino.shape[i + 4 * j]) {
-                al_draw_filled_rectangle(
-                PLAYFIELD_X + (i + tetromino.x) * BLOCK_LENGTH,
-                PLAYFIELD_Y + (j + tetromino.y) * BLOCK_LENGTH,
-                PLAYFIELD_X + (i + tetromino.x + 1) * BLOCK_LENGTH,
-                PLAYFIELD_Y + (j + tetromino.y + 1) * BLOCK_LENGTH,
-                red
+            int color = tetromino.shape[i + 4 * j];
+
+            if (color != 0) {
+                al_draw_scaled_bitmap(
+                    allegro->bitmap_blocks,
+                    0,
+                    16 * (color - 1),
+                    16,
+                    16,
+                    PLAYFIELD_X + (i + tetromino.x) * BLOCK_LENGTH,
+                    PLAYFIELD_Y + (j + tetromino.y) * BLOCK_LENGTH,
+                    BLOCK_LENGTH,
+                    BLOCK_LENGTH,
+                    0
                 );
             }
         }
     }
 
-    al_draw_rectangle(
-    PLAYFIELD_X,
-    PLAYFIELD_Y,
-    PLAYFIELD_X + PLAYFIELD_WIDTH,
-    PLAYFIELD_Y + PLAYFIELD_HEIGHT,
-    red,
-    1
+    al_draw_textf(
+        allegro->font,
+        al_map_rgb(255,255,255),
+        WIDTH - WIDTH/5,
+        HEIGHT - HEIGHT/8,
+        ALLEGRO_ALIGN_CENTER,"%04d points",
+        playfield.points
     );
 }
 
-void update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, double delta_time)
+int update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, double delta_time)
 {
-    int x_move = 0;
-    int y_move = 0;
+    if (input->escape_pressed) {
+        return MODE_EXIT;
+    }
 
+    int x_move = 0;
     int rotation = 0;
 
     Tetromino updated_tetromino = *tetromino;
@@ -488,44 +566,61 @@ void update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, 
             updated_tetromino.y++;
         }
 
-        tetromino_next(playfield, tetromino);
+        tetromino_next(playfield, tetromino, &updated_tetromino);
         updated_tetromino = *tetromino;
     }
 
     // Cheque do movimento vertical
 
-    if (playfield->piece_fall_timer <= 0.0) {
+    if ((input->down_down && playfield->fast_fall_timer <= 0) || input->down_pressed) {
         updated_tetromino.y++;
-        playfield->piece_fall_timer = 1.0;
-        y_move = 1;
-    }
 
-    if ((input->down_down && playfield->piece_fast_fall_timer <= 0) || input->down_pressed) {
-        updated_tetromino.y++;
-        playfield->piece_fast_fall_timer = 0.05;
-        playfield->piece_fall_timer = 1.0;
-        y_move = 1;
-    }
+        playfield->fast_fall_timer = FAST_FALL;
+        playfield->fall_timer = fall_time_difficulty_table[difficulty];
 
-    if (y_move) {
         if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
-            tetromino_next(playfield, tetromino);
-            updated_tetromino = *tetromino;
+            updated_tetromino.y--;
+        } else {
+            playfield->next_timer = NEXT_TIME;
+        }
+    }
+
+    if (playfield->fall_timer <= 0.0) {
+        updated_tetromino.y++;
+        playfield->fall_timer = fall_time_difficulty_table[difficulty];
+
+        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
+            updated_tetromino.y--;
+        } else {
+            playfield->next_timer = NEXT_TIME;
+        }
+    }
+
+    if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
+        playfield->next_timer -= delta_time;
+
+        if (playfield->next_timer <= 0) {
+            playfield->next_timer = NEXT_TIME;
+            int loss = tetromino_next(playfield, tetromino, &updated_tetromino);
+
+            if (loss) {
+                return 1;
+            }
         }
     }
 
     // Cheque do movimento horizontal
 
-    if ((input->left_down && playfield->piece_horizontal_move_timer <= 0) || input->left_pressed) {
+    if ((input->left_down && playfield->horizontal_move_timer <= 0) || input->left_pressed) {
         updated_tetromino.x--;
-        playfield->piece_horizontal_move_timer = 0.05;
+        playfield->horizontal_move_timer = HOR_TIME;
 
         x_move--;
     }
 
-    if ((input->right_down && playfield->piece_horizontal_move_timer <= 0) || input->right_pressed) {
+    if ((input->right_down && playfield->horizontal_move_timer <= 0) || input->right_pressed) {
         updated_tetromino.x++;
-        playfield->piece_horizontal_move_timer = 0.05;
+        playfield->horizontal_move_timer = HOR_TIME;
 
         x_move++;
     }
@@ -556,66 +651,300 @@ void update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, 
         tetromino_wall_kick(playfield, tetromino, updated_tetromino, rotation);
     }
 
-    if (playfield->piece_fall_timer > 0) {
-        playfield->piece_fall_timer -= delta_time;
+    if (playfield->fall_timer >= 0) {
+        playfield->fall_timer -= delta_time;
     }
 
-    if (playfield->piece_horizontal_move_timer > 0) {
-        playfield->piece_horizontal_move_timer -= delta_time;
+    if (playfield->horizontal_move_timer) {
+        playfield->horizontal_move_timer -= delta_time;
     }
 
-    if (playfield->piece_fast_fall_timer > 0) {
-        playfield->piece_fast_fall_timer -= delta_time;
+    if (playfield->fast_fall_timer) {
+        playfield->fast_fall_timer -= delta_time;
     }
+
+    return 0;
 }
 
 GameMode game_playfield(AllegroContext *allegro, Input *input)
 {
+    GameMode mode = MODE_PLAYFIELD;
+
+    int show_tutorial = 1;
+
     double current_time;
     double last_time = al_get_time();
+    double delta_time;
 
-    ALLEGRO_COLOR black = al_map_rgb(0, 0, 0);
     Playfield playfield = {
         .board = {0},
         .lines_cleared = 0,
-        .score = 0,
+        .points = 0,
 
-        .piece_fall_timer = 1.0,
+        .fall_timer = fall_time_difficulty_table[difficulty],
+        .next_timer = 1.0,
 
-        .piece_horizontal_move_timer = 0.0,
-        .piece_fast_fall_timer = 0.0
+        .horizontal_move_timer = 0.0,
+        .fast_fall_timer = 0.0
     };
 
-    Tetromino tetromino = tetromino_table[TETROMINO_O];
+    Tetromino tetromino = tetromino_table[rand() % 7];
 
-    while (1) {
-        double current_time = al_get_time();
-        double delta_time = current_time - last_time;
-
+    while (mode == MODE_PLAYFIELD) {
         al_wait_for_event(allegro->queue, &allegro->event);
         input_update(allegro, input);
 
         if (allegro->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || input->escape_pressed) {
-            return MODE_EXIT;
+            input_pressed_flush(input);
+
+            mode = pause_menu(allegro, input);
+
+            continue;
         }
 
         if (allegro->event.type == ALLEGRO_EVENT_TIMER) {
-            update_playfield(&playfield, &tetromino, input, delta_time);
+            current_time = al_get_time();
+            delta_time = current_time - last_time;
+
+            int loss = update_playfield(&playfield, &tetromino, input, delta_time);
             input_pressed_flush(input);
 
+            if (playfield.lines_cleared != 0) {
+                show_tutorial = 0;
+            }
+
+            if (loss) {
+                loss_screen(allegro, input, playfield.points);
+
+                if (highscore_comparison(playfield.points)){
+                    get_new_highscore(allegro, playfield.points);
+                    debug_leaderboard();
+                }
+
+                playfield = (Playfield){
+                    .board = {0},
+                    .lines_cleared = 0,
+                    .points = 0,
+
+                    .fall_timer = fall_time_difficulty_table[difficulty],
+                    .next_timer = 1.0,
+
+                    .horizontal_move_timer = 0.0,
+                    .fast_fall_timer = 0.0
+                };
+            }
+
             allegro->redraw = 1;
+
+            last_time = current_time;
         }
 
         if (allegro->redraw && al_is_event_queue_empty(allegro->queue)) {
-            al_clear_to_color(black);
-            draw_playfield(playfield, tetromino);
+            al_clear_to_color(BACKGROUND_COLOR);
+            draw_playfield(allegro, playfield, tetromino);
+
+            if (show_tutorial) {
+                draw_keybinds(allegro, HEIGHT / 32.0);
+            }
 
             al_flip_display();
             allegro->redraw = 0;
         }
-
-        last_time = current_time;
     }
 
-    return MODE_EXIT;
+    return mode;
+}
+
+GameMode pause_menu(AllegroContext *allegro, Input *input)
+{
+    int selected = 0;
+
+    const t_button pause_button[2] = {
+        {
+            .origin_x = WIDTH/3 + WIDTH/18,
+            .origin_y = HEIGHT/3 + HEIGHT/18,
+
+            .end_x = WIDTH - (WIDTH/3 + WIDTH/18),
+            .end_y = HEIGHT/3 + HEIGHT/18 + HEIGHT/15,
+
+            .label = "CONTINUE",
+
+            .default_color  = al_map_rgb(38, 17, 82),
+            .selected_color = al_map_rgb(72, 118, 187)
+        },
+
+        {
+            .origin_x = WIDTH/3 + WIDTH/18,
+            .origin_y = HEIGHT/3 + HEIGHT/18 + HEIGHT/15 + HEIGHT/30,
+
+            .end_x = WIDTH - (WIDTH/3 + WIDTH/18),
+            .end_y = HEIGHT/3 + HEIGHT/18 + 2 * HEIGHT/15 + HEIGHT/30,
+
+            .label = "EXIT",
+
+            .default_color  = al_map_rgb(38, 17, 82),
+            .selected_color = al_map_rgb(72, 118, 187)
+        }
+    };
+
+    while (1) {
+        al_wait_for_event(allegro->queue, &allegro->event);
+        input_update(allegro, input);
+
+        if (input->escape_pressed || input->x_pressed) {
+            input_pressed_flush(input);
+            return MODE_PLAYFIELD;
+        }
+
+        if (allegro->event.type == ALLEGRO_EVENT_TIMER) {
+            if (input->down_pressed) {
+                selected = 1;
+            }
+            if (input->up_pressed) {
+                selected = 0;
+            }
+
+            if (input->space_pressed || input->z_pressed) {
+                input_pressed_flush(input);
+                switch (selected) {
+                case 0:
+                    return MODE_PLAYFIELD;
+                case 1:
+                    return MODE_MAIN_MENU;
+                }
+            }
+
+            input_pressed_flush(input);
+            allegro->redraw = 1;
+        }
+
+        if (allegro->redraw) {
+            allegro->redraw = 0;
+
+            al_clear_to_color(BACKGROUND_COLOR);
+
+            al_draw_scaled_bitmap(
+                allegro->bitmap_playfield,
+                0,
+                0,
+                170,
+                330,
+                PLAYFIELD_X - BLOCK_LENGTH * 5 / 16,
+                PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16,
+                PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8,
+                PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8,
+                0
+            );
+
+            for (int i = 0; i < 2; i++) {
+                button_draw(allegro, pause_button[i], selected == i);
+            }
+
+            al_flip_display();
+        }
+    }
+}
+
+void draw_keybinds(AllegroContext *allegro, int sprite_scaling)
+{
+
+    int sprite_x = 0;        // Coordenada X no sprite, sempre 0
+    int sprite_y = 0;        // Coordenada Y no sprite, 0, 1, 2, 3, 4, 5 de acordo com o botão
+
+    char keybind_names[6][15] = {
+        "RIGHT",
+        "LEFT",
+        "DOWN",
+        "SPACE",
+        "Z X",
+        "ESCAPE"
+    };
+
+    for(int i=0; i<2; i++){
+        for(int j=3; j>0; j--){
+            al_draw_scaled_bitmap(
+                allegro->bitmap_keybinds,
+                sprite_x,
+                sprite_y * 48,
+                48,
+                48,
+                WIDTH - (j * 4.5f * sprite_scaling),
+                HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)),
+                2 * sprite_scaling,
+                2 * sprite_scaling,
+                0
+            );
+                                            // desenha o botão baseado na escala definida
+
+            al_draw_textf(
+                allegro->font_small,
+                WHITE,
+                WIDTH - ((j * 4.5f * sprite_scaling) - (sprite_scaling)),
+                HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + (HEIGHT / 12),
+                ALLEGRO_ALIGN_CENTER,
+                "%s",
+                keybind_names[sprite_y]
+            );
+
+            sprite_y++; // define o botão de acordo com o sprite
+        }
+    }
+}
+
+void loss_screen(AllegroContext *allegro, Input *input, int points)
+{
+    al_draw_filled_rounded_rectangle(
+        WIDTH/3 + WIDTH/18,
+        HEIGHT/3 + HEIGHT/15,
+        WIDTH - (WIDTH/3 + WIDTH/18),
+        HEIGHT - (HEIGHT/3 + HEIGHT/15),
+        0,
+        0,
+        al_map_rgb(238, 48, 70)
+    );
+
+    al_draw_filled_rounded_rectangle(
+        WIDTH/3 + WIDTH/15,
+        HEIGHT/3 + HEIGHT/12,
+        WIDTH - (WIDTH/3 + WIDTH/15),
+        HEIGHT - (HEIGHT/3 + HEIGHT/12),
+        0,
+        0,
+        al_map_rgb(166, 38, 84)
+    );
+
+    al_draw_text(
+        allegro->font,
+        WHITE,
+        WIDTH/2,
+        HEIGHT/3 + HEIGHT/10,
+        ALLEGRO_ALIGN_CENTER,
+        "GAME OVER"
+    );
+
+    al_draw_textf(
+        allegro->font,
+        WHITE,
+        WIDTH/2,
+        HEIGHT/2,
+        ALLEGRO_ALIGN_CENTER,
+        "SCORE: %04d",
+        points
+    );
+
+    al_flip_display();
+
+    while(1) {
+        al_wait_for_event(allegro->queue, &allegro->event);
+        input_update(allegro, input);
+
+        if (allegro->event.type == ALLEGRO_EVENT_TIMER) {
+            allegro->redraw = 1;
+
+            if (input->escape_pressed || input->z_pressed || input->space_pressed) {
+                input_pressed_flush(input);
+                return;
+            }
+        }
+    }
 }
