@@ -177,16 +177,28 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
 
             for(int j=0; j<DIFFICULTY_LEVELS; j++){
                 for(int i=0; i<TOP_RANKING; i++){
-                    al_draw_textf(
-                        allegro->font,
-                        WHITE,
-                        WIDTH/4 + j * WIDTH/4,
-                        HEIGHT/4 + HEIGHT/10 * i,
-                        ALLEGRO_ALIGN_CENTER,
-                        "%s %04d",
-                        difficulty_entries[j].entries[i].name,
-                        difficulty_entries[j].entries[i].score
-                    );
+                    char *name = difficulty_entries[j].entries[i].name;
+                    int score = difficulty_entries[j].entries[i].score;
+
+                    if (score != 0) {
+                        al_draw_textf(
+                            allegro->font_small,
+                            WHITE,
+                            WIDTH/4 + j * WIDTH/4,
+                            HEIGHT/4 + HEIGHT/10 * i,
+                            ALLEGRO_ALIGN_CENTER,
+                            "%s %06d", name, score
+                        );
+                    } else {
+                        al_draw_textf(
+                            allegro->font_small,
+                            WHITE,
+                            WIDTH/4 + j * WIDTH/4,
+                            HEIGHT/4 + HEIGHT/10 * i,
+                            ALLEGRO_ALIGN_CENTER,
+                            "-"
+                        );
+                    }
                 }
             }
 

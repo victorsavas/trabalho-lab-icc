@@ -165,7 +165,7 @@ void get_new_highscore(AllegroContext *allegro, int points)
             );
 
             al_draw_textf(
-                allegro->font,
+                allegro->font_small,
                 WHITE,
                 WIDTH/2,
                 HEIGHT/3 + HEIGHT/10,
@@ -175,7 +175,7 @@ void get_new_highscore(AllegroContext *allegro, int points)
             );
 
             al_draw_textf(
-                allegro->font,
+                allegro->font_small,
                 WHITE,
                 WIDTH/2,
                 HEIGHT/2,

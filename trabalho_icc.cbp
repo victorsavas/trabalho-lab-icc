@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="trabalho_icc" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/trabalho_icc" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="allegro/bin" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="allegro/lib/liballegro_monolith-debug.dll.a" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/trabalho_icc" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="allegro/bin" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="allegro/lib/liballegro_monolith.dll.a" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="allegro/include" />
+		</Compiler>
+		<Unit filename="src/allegro_context.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/allegro_context.h" />
+		<Unit filename="src/game.h" />
+		<Unit filename="src/game_loop.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/global_state.h" />
+		<Unit filename="src/input.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/input.h" />
+		<Unit filename="src/leaderboard.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/main_menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/playfield.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

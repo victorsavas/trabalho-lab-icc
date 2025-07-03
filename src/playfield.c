@@ -25,6 +25,7 @@ typedef enum TetrominoType {
 } TetrominoType;
 
 double fall_time_difficulty_table[3] = {1.0, 0.2, 0.08};
+int scoring_table[5] = { 0, 40, 100, 300, 1200 };
 
 // Tabelas de referência para o algorítmo SRS de rotação.
 // Rotações positivas são em sentido horário
@@ -95,6 +96,11 @@ typedef struct Playfield {
 
     double horizontal_move_timer;
     double fast_fall_timer;
+
+    TetrominoType queue[5];
+
+    TetrominoType hand;
+    int toggle_hand;
 } Playfield;
 
 static Tetromino tetromino_rotate_counterclockwise(Tetromino *tetromino);
@@ -111,6 +117,8 @@ static GameMode pause_menu(AllegroContext *allegro, Input *input);
 static void draw_keybinds(AllegroContext *allegro, int sprite_scaling);
 
 static void loss_screen(AllegroContext *allegro, Input *input, int points);
+
+static void playfield_dequeue(Playfield *playfield, Tetromino *tetromino);
 
 static const Tetromino tetromino_table[7] = {
 
@@ -339,6 +347,17 @@ int tetromino_collision_check(Playfield *playfield, Tetromino tetromino, int x_o
     return 0;
 }
 
+void playfield_dequeue(Playfield *playfield, Tetromino *tetromino)
+{
+    *tetromino = tetromino_table[playfield->queue[0]];
+
+    for (int i = 0; i < 4; i++) {
+        playfield->queue[i] = playfield->queue[i + 1];
+    }
+
+    playfield->queue[4] = rand() % 7;
+}
+
 int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *updated_tetromino)
 {
     for (int i = 0; i < 4; i++) {
@@ -360,7 +379,7 @@ int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *update
         }
     }
 
-    *tetromino = tetromino_table[rand() % 7];
+    playfield_dequeue(playfield, tetromino);
 
     // Verificando se há linhas preenchidas
 
@@ -368,19 +387,16 @@ int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *update
     int y_0;
 
     for (int y = 19; y >= 0; y--) {
-        int x;
-        for (x = 0; x < 10; x++) {
+        for (int x = 0; x < 10; x++) {
             if (playfield->board[x + y * 10] == 0) {
+                if (lines_cleared != 0) {
+                    y_0 = y;
+                    y = 0;
+                }
                 break;
+            } else if (x == 9) {
+                lines_cleared++;
             }
-        }
-
-        // Linha preenchida
-        if (x == 10) {
-            lines_cleared++;
-        } else if (lines_cleared > 0) {
-            y_0 = y;
-            break;
         }
     }
 
@@ -399,7 +415,8 @@ int tetromino_next(Playfield *playfield, Tetromino *tetromino, Tetromino *update
     }
 
     playfield->lines_cleared += lines_cleared;
-    playfield->points += lines_cleared * 100;
+    playfield->points += scoring_table[lines_cleared];
+    playfield->toggle_hand = 1;
 
     *updated_tetromino = *tetromino;
 
@@ -454,6 +471,8 @@ void tetromino_wall_kick(Playfield *playfield, Tetromino *tetromino, Tetromino u
 
 void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetromino)
 {
+    // Borda do mapa
+
     al_draw_scaled_bitmap(
         allegro->bitmap_playfield,
         0,
@@ -466,6 +485,8 @@ void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetr
         PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8,
         0
     );
+
+    // Blocos do mapa
 
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 20; j++) {
@@ -487,6 +508,8 @@ void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetr
             }
         }
     }
+
+    // Sombra do tetrominó ativo
 
     Tetromino ghost_tetromino = tetromino;
 
@@ -513,6 +536,8 @@ void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetr
         }
     }
 
+    // Tetrominó ativo
+
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             int color = tetromino.shape[i + 4 * j];
@@ -534,20 +559,101 @@ void draw_playfield(AllegroContext *allegro, Playfield playfield, Tetromino tetr
         }
     }
 
+    // Linhas e pontos
+
+    al_draw_textf(
+        allegro->font,
+        al_map_rgb(255,255,255),
+        WIDTH - WIDTH/5,
+        HEIGHT - HEIGHT/8 - 35,
+        ALLEGRO_ALIGN_CENTER,"LINES: %d",
+        playfield.lines_cleared
+    );
+
     al_draw_textf(
         allegro->font,
         al_map_rgb(255,255,255),
         WIDTH - WIDTH/5,
         HEIGHT - HEIGHT/8,
-        ALLEGRO_ALIGN_CENTER,"%04d points",
+        ALLEGRO_ALIGN_CENTER,"POINTS:%06d",
         playfield.points
     );
+
+    // Fila de tetrominós
+
+    for (int k = 0; k < 5; k++) {
+        Tetromino t = tetromino_table[playfield.queue[k]];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int color = t.shape[i + 4 * j];
+
+                if (color != 0) {
+                    al_draw_scaled_bitmap(
+                        allegro->bitmap_blocks,
+                        0,
+                        16 * (color - 1),
+                        16,
+                        16,
+                        PLAYFIELD_X + (i + 12) * BLOCK_LENGTH,
+                        PLAYFIELD_Y + (j + k * 3 + 2) * BLOCK_LENGTH,
+                        BLOCK_LENGTH,
+                        BLOCK_LENGTH,
+                        0
+                    );
+                }
+            }
+        }
+    }
+
+    // Tetrominó na "mão"
+
+    if (playfield.hand != -1) {
+        Tetromino hand_tetromino = tetromino_table[playfield.hand];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int color = hand_tetromino.shape[i + 4 * j];
+
+                if (color != 0) {
+                    al_draw_scaled_bitmap(
+                        allegro->bitmap_blocks,
+                        0,
+                        16 * (color - 1),
+                        16,
+                        16,
+                        PLAYFIELD_X + (i - 5) * BLOCK_LENGTH,
+                        PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH,
+                        BLOCK_LENGTH,
+                        BLOCK_LENGTH,
+                        0
+                    );
+                }
+            }
+        }
+    }
 }
 
 int update_playfield(Playfield *playfield, Tetromino *tetromino, Input *input, double delta_time)
 {
     if (input->escape_pressed) {
         return MODE_EXIT;
+    }
+
+    // Inverte o tetrominó na mão
+
+    if (input->c_pressed && playfield->toggle_hand) {
+        TetrominoType hand = playfield->hand;
+
+        if (hand == -1) {
+            playfield->hand = tetromino->type;
+            playfield_dequeue(playfield, tetromino);
+        } else {
+            playfield->hand = tetromino->type;
+            *tetromino = tetromino_table[hand];
+        }
+
+        playfield->toggle_hand = 0;
     }
 
     int x_move = 0;
@@ -685,8 +791,15 @@ GameMode game_playfield(AllegroContext *allegro, Input *input)
         .next_timer = 1.0,
 
         .horizontal_move_timer = 0.0,
-        .fast_fall_timer = 0.0
+        .fast_fall_timer = 0.0,
+
+        .hand = -1,
+        .toggle_hand = 1
     };
+
+    for (int i = 0; i < 5; i++) {
+        playfield.queue[i] = rand() % 7;
+    }
 
     Tetromino tetromino = tetromino_table[rand() % 7];
 
@@ -730,8 +843,15 @@ GameMode game_playfield(AllegroContext *allegro, Input *input)
                     .next_timer = 1.0,
 
                     .horizontal_move_timer = 0.0,
-                    .fast_fall_timer = 0.0
+                    .fast_fall_timer = 0.0,
+
+                    .hand = -1,
+                    .toggle_hand = 1
                 };
+
+                for (int i = 0; i < 5; i++) {
+                    playfield.queue[i] = rand() % 7;
+                }
             }
 
             allegro->redraw = 1;
