@@ -1,6 +1,12 @@
 #include <stdlib.h>
 #include "allegro_context.h"
 
+// Subrotina subordinada de toggle_fullscreen() que altera os parâmetros de posição e tamanho dos elementos na tela
+
+static void resize_window(AllegroContext *allegro)
+
+// Implementação das subrotinas
+
 AllegroContext *allegro_init()
 {
     // Inicializa o Allegro e os módulos necessários
@@ -14,7 +20,7 @@ AllegroContext *allegro_init()
     al_init_acodec_addon();
 
     // Cria uma janela com as dimensões especificadas
-    al_set_new_display_flags(ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
+    al_set_new_display_flags(ALLEGRO_WINDOWED);
     ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
@@ -118,12 +124,15 @@ void resize_window(AllegroContext *allegro)
     int width = al_get_display_width(allegro->display);
     int height = al_get_display_height(allegro->display);
 
+    // Ajusta os elementos do jogo da melhor forma de modo proporcional
+
     float ratio = (float)width / (float)height;
 
     float x_offset;
     float y_offset;
 
     float scale;
+
 
     if (ratio >= (float)WIDTH / (float)HEIGHT) {
         scale = (float)height / (float)HEIGHT;
@@ -142,6 +151,8 @@ void resize_window(AllegroContext *allegro)
     allegro->x_offset = x_offset;
     allegro->y_offset = y_offset;
 
+    // Recarrega as fontes com o novo tamanho
+
     ALLEGRO_FONT *font = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 50 * scale, 0);
     ALLEGRO_FONT *font_small = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 35 * scale, 0);
 
@@ -159,7 +170,7 @@ void resize_window(AllegroContext *allegro)
 void toggle_fullscreen(AllegroContext *allegro)
 {
     if(allegro->fullscreen){
-        al_set_new_display_flags(ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
+        al_set_new_display_flags(ALLEGRO_WINDOWED);
 
         allegro->fullscreen = 0;
     } else {
@@ -167,6 +178,8 @@ void toggle_fullscreen(AllegroContext *allegro)
 
         allegro->fullscreen = 1;
     }
+
+    // Cria um novo display
 
     al_destroy_event_queue(allegro->queue);
     al_destroy_display(allegro->display);

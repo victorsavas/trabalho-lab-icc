@@ -3,8 +3,14 @@
 
 GlobalState *global_init()
 {
+    // Alocação dinâmica
+
     GlobalState *global;
-    global = calloc(1, sizeof(*global));
+    global = malloc(sizeof(*global));
+
+    global->selected_difficulty = 0;
+
+    // Carrega o placar
 
     int error_code = read_leaderboard_file(global->leaderboard);
 
@@ -18,6 +24,8 @@ GlobalState *global_init()
 
 void global_free(GlobalState *global)
 {
+    // Salva o placar e libera memória
+
     save_leaderboard_to_file(global->leaderboard);
 
     free(global);
@@ -25,6 +33,8 @@ void global_free(GlobalState *global)
 
 int read_leaderboard_file(t_leaderboard *leaderboard)
 {
+    // Abre o arquivo do placar
+
     FILE *file;
 
     file = fopen("leaderboard.bin", "rb+");
@@ -59,6 +69,8 @@ int read_leaderboard_file(t_leaderboard *leaderboard)
 
 int save_leaderboard_to_file(t_leaderboard *leaderboard)
 {
+    // Salva o arquivo do placar
+
     FILE *file;
 
     file = fopen("leaderboard.bin", "wb");

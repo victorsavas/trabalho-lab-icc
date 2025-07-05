@@ -397,6 +397,346 @@ GameMode game_playfield(GlobalState *global, AllegroContext *allegro, Input *inp
     return MODE_EXIT;
 }
 
+void playfield_reset(Playfield *playfield, int difficulty)
+{
+    // Limpa o tabuleiro, inicializa os cronômetros e a fila de tetrominós
+
+    *playfield = (Playfield){
+        .board = {0},
+
+        .tetromino = tetromino_table[rand() % 7],
+
+        .lines_cleared = 0,
+        .points = 0,
+
+        .fall_timer = fall_time_difficulty_table[difficulty],
+        .next_timer = 1.0,
+
+        .horizontal_move_timer = 0.0,
+        .fast_fall_timer = 0.0,
+
+        .hand = -1,
+        .toggle_hand = 1
+    };
+
+    // Inicializa a fila
+
+    for (int i = 0; i < 5; i++) {
+        playfield->queue[i] = rand() % 7;
+    }
+}
+
+int playfield_update(Playfield *playfield, Input *input, double delta_time, int difficulty)
+{
+    // O cronômetro da subrotina é acionado em função da dificuldade
+
+    Tetromino *tetromino = &playfield->tetromino;
+
+    // Inverte o tetrominó na mão
+
+    if (input->c_pressed && playfield->toggle_hand) {
+        TetrominoType hand = playfield->hand;
+
+        if (hand == -1) {
+            playfield->hand = tetromino->type;
+            playfield_dequeue(playfield);
+        } else {
+            playfield->hand = tetromino->type;
+            *tetromino = tetromino_table[hand];
+        }
+
+        playfield->toggle_hand = 0;
+    }
+
+    int x_move = 0;
+    int rotation = 0;
+
+    Tetromino updated_tetromino = *tetromino;
+
+    // Queda instantânea
+
+    if (input->space_pressed) {
+        for (int i = 0; i < 20; i++) {
+            if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
+                *tetromino = updated_tetromino;
+                break;
+            }
+            updated_tetromino.y++;
+        }
+
+        tetromino_next(playfield, &updated_tetromino);
+        updated_tetromino = *tetromino;
+    }
+
+    // Queda rápida
+
+    if ((input->down_down && playfield->fast_fall_timer <= 0) || input->down_pressed) {
+        updated_tetromino.y++;
+
+        playfield->fast_fall_timer = FAST_FALL;
+        playfield->fall_timer = fall_time_difficulty_table[difficulty];
+
+        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
+            updated_tetromino.y--;
+        } else {
+            playfield->next_timer = NEXT_TIME;
+        }
+    }
+
+    // Queda lenta
+
+    if (playfield->fall_timer <= 0.0) {
+        updated_tetromino.y++;
+        playfield->fall_timer = fall_time_difficulty_table[difficulty];
+
+        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
+            updated_tetromino.y--;
+        } else {
+            playfield->next_timer = NEXT_TIME;
+        }
+    }
+
+    // Cheque de aderência
+
+    if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
+        playfield->next_timer -= delta_time;
+
+        if (playfield->next_timer <= 0) {
+            playfield->next_timer = NEXT_TIME;
+            int loss = tetromino_next(playfield, &updated_tetromino);
+
+            if (loss) {
+                return 1;
+            }
+        }
+    }
+
+    // Cheque do movimento horizontal
+
+    if ((input->left_down && playfield->horizontal_move_timer <= 0) || input->left_pressed) {
+        updated_tetromino.x--;
+        playfield->horizontal_move_timer = HOR_TIME;
+
+        x_move--;
+    }
+
+    if ((input->right_down && playfield->horizontal_move_timer <= 0) || input->right_pressed) {
+        updated_tetromino.x++;
+        playfield->horizontal_move_timer = HOR_TIME;
+
+        x_move++;
+    }
+
+    if (x_move != 0) {
+        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
+            updated_tetromino.x -= x_move;
+        }
+    }
+
+    *tetromino = updated_tetromino;
+
+    // Cheque da rotação
+
+    if (input->z_pressed) {
+        tetromino_rotate_clockwise(&updated_tetromino);
+
+        rotation++;
+    }
+
+    if (input->x_pressed) {
+        tetromino_rotate_counterclockwise(&updated_tetromino);
+
+        rotation--;
+    }
+
+    // Wall kick
+
+    if (rotation) {
+        tetromino_wall_kick(playfield, updated_tetromino, rotation);
+    }
+
+    // Atualização dos cronometros
+
+    if (playfield->fall_timer >= 0) {
+        playfield->fall_timer -= delta_time;
+    }
+
+    if (playfield->horizontal_move_timer) {
+        playfield->horizontal_move_timer -= delta_time;
+    }
+
+    if (playfield->fast_fall_timer) {
+        playfield->fast_fall_timer -= delta_time;
+    }
+
+    return 0;
+}
+
+void playfield_draw(AllegroContext *allegro, Playfield *playfield)
+{
+    // Borda do mapa
+
+    al_draw_scaled_bitmap(
+        allegro->bitmap_playfield,
+        0,
+        0,
+        170,
+        330,
+        (PLAYFIELD_X - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->x_offset,
+        (PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->y_offset,
+        (PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8) * allegro->scale,
+        (PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8) * allegro->scale,
+        0
+    );
+
+    // Blocos do mapa
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 20; j++) {
+            int color = playfield->board[i + 10 * j];
+
+            if (color != 0) {
+                al_draw_scaled_bitmap(
+                    allegro->bitmap_blocks,
+                    0,
+                    16 * (color - 1),
+                    16,
+                    16,
+                    (PLAYFIELD_X + i * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + j * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    BLOCK_LENGTH * allegro->scale,
+                    BLOCK_LENGTH * allegro->scale,
+                    0
+                );
+            }
+        }
+    }
+
+    // Sombra do tetrominó ativo
+
+    Tetromino ghost_tetromino = playfield->tetromino;
+
+    for (int i = 0; i < 20; i++) {
+        if (tetromino_collision_check(playfield, ghost_tetromino, 0, 1)) {
+            break;
+        }
+        ghost_tetromino.y++;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int color = ghost_tetromino.shape[i + 4 * j];
+
+            if (color != 0) {
+                al_draw_filled_rectangle(
+                    (PLAYFIELD_X + (i + ghost_tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + ghost_tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    (PLAYFIELD_X + (i + ghost_tetromino.x + 1) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + ghost_tetromino.y + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    al_map_rgb(39, 37, 115)
+                );
+            }
+        }
+    }
+
+    // Tetrominó ativo
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int color = playfield->tetromino.shape[i + 4 * j];
+
+            if (color != 0) {
+                al_draw_scaled_bitmap(
+                    allegro->bitmap_blocks,
+                    0,
+                    16 * (color - 1),
+                    16,
+                    16,
+                    (PLAYFIELD_X + (i + playfield->tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + playfield->tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    BLOCK_LENGTH * allegro->scale,
+                    BLOCK_LENGTH * allegro->scale,
+                    0
+                );
+            }
+        }
+    }
+
+    // Linhas e pontos
+
+    al_draw_textf(
+        allegro->font,
+        al_map_rgb(255,255,255),
+        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
+        (HEIGHT - HEIGHT/8 - 35) * allegro->scale + allegro->y_offset,
+        ALLEGRO_ALIGN_CENTER,
+        "LINES:%d", playfield->lines_cleared
+    );
+
+    al_draw_textf(
+        allegro->font,
+        al_map_rgb(255,255,255),
+        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
+        (HEIGHT - HEIGHT/8) * allegro->scale + allegro->y_offset,
+        ALLEGRO_ALIGN_CENTER,
+        "POINTS:%06d", playfield->points
+    );
+
+    // Fila de tetrominós
+
+    for (int k = 0; k < 5; k++) {
+        Tetromino t = tetromino_table[playfield->queue[k]];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int color = t.shape[i + 4 * j];
+
+                if (color != 0) {
+                    al_draw_scaled_bitmap(
+                        allegro->bitmap_blocks,
+                        0,
+                        16 * (color - 1),
+                        16,
+                        16,
+                        (PLAYFIELD_X + (i + 12) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                        (PLAYFIELD_Y + (j + k * 3 + 2) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                        BLOCK_LENGTH * allegro->scale,
+                        BLOCK_LENGTH * allegro->scale,
+                        0
+                    );
+                }
+            }
+        }
+    }
+
+    // Tetrominó na "mão"
+
+    if (playfield->hand != -1) {
+        Tetromino hand_tetromino = tetromino_table[playfield->hand];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int color = hand_tetromino.shape[i + 4 * j];
+
+                if (color != 0) {
+                    al_draw_scaled_bitmap(
+                        allegro->bitmap_blocks,
+                        0,
+                        16 * (color - 1),
+                        16,
+                        16,
+                        (PLAYFIELD_X + (i - 5) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                        (PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                        BLOCK_LENGTH * allegro->scale,
+                        BLOCK_LENGTH * allegro->scale,
+                        0
+                    );
+                }
+            }
+        }
+    }
+}
+
 void tetromino_rotate_counterclockwise(Tetromino *tetromino)
 {
     // Atualiza o estado de rotação do tetrominó
@@ -701,346 +1041,6 @@ void tetromino_wall_kick(Playfield *playfield, Tetromino updated_tetromino, int 
     }
 
     // Caso não haja wallkick de resolução, não ocorre rotação.
-}
-
-void playfield_draw(AllegroContext *allegro, Playfield *playfield)
-{
-    // Borda do mapa
-
-    al_draw_scaled_bitmap(
-        allegro->bitmap_playfield,
-        0,
-        0,
-        170,
-        330,
-        (PLAYFIELD_X - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->x_offset,
-        (PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->y_offset,
-        (PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8) * allegro->scale,
-        (PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8) * allegro->scale,
-        0
-    );
-
-    // Blocos do mapa
-
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 20; j++) {
-            int color = playfield->board[i + 10 * j];
-
-            if (color != 0) {
-                al_draw_scaled_bitmap(
-                    allegro->bitmap_blocks,
-                    0,
-                    16 * (color - 1),
-                    16,
-                    16,
-                    (PLAYFIELD_X + i * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                    (PLAYFIELD_Y + j * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                    BLOCK_LENGTH * allegro->scale,
-                    BLOCK_LENGTH * allegro->scale,
-                    0
-                );
-            }
-        }
-    }
-
-    // Sombra do tetrominó ativo
-
-    Tetromino ghost_tetromino = playfield->tetromino;
-
-    for (int i = 0; i < 20; i++) {
-        if (tetromino_collision_check(playfield, ghost_tetromino, 0, 1)) {
-            break;
-        }
-        ghost_tetromino.y++;
-    }
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            int color = ghost_tetromino.shape[i + 4 * j];
-
-            if (color != 0) {
-                al_draw_filled_rectangle(
-                    (PLAYFIELD_X + (i + ghost_tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                    (PLAYFIELD_Y + (j + ghost_tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                    (PLAYFIELD_X + (i + ghost_tetromino.x + 1) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                    (PLAYFIELD_Y + (j + ghost_tetromino.y + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                    al_map_rgb(39, 37, 115)
-                );
-            }
-        }
-    }
-
-    // Tetrominó ativo
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            int color = playfield->tetromino.shape[i + 4 * j];
-
-            if (color != 0) {
-                al_draw_scaled_bitmap(
-                    allegro->bitmap_blocks,
-                    0,
-                    16 * (color - 1),
-                    16,
-                    16,
-                    (PLAYFIELD_X + (i + playfield->tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                    (PLAYFIELD_Y + (j + playfield->tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                    BLOCK_LENGTH * allegro->scale,
-                    BLOCK_LENGTH * allegro->scale,
-                    0
-                );
-            }
-        }
-    }
-
-    // Linhas e pontos
-
-    al_draw_textf(
-        allegro->font,
-        al_map_rgb(255,255,255),
-        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
-        (HEIGHT - HEIGHT/8 - 35) * allegro->scale + allegro->y_offset,
-        ALLEGRO_ALIGN_CENTER,
-        "LINES:%d", playfield->lines_cleared
-    );
-
-    al_draw_textf(
-        allegro->font,
-        al_map_rgb(255,255,255),
-        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
-        (HEIGHT - HEIGHT/8) * allegro->scale + allegro->y_offset,
-        ALLEGRO_ALIGN_CENTER,
-        "POINTS:%06d", playfield->points
-    );
-
-    // Fila de tetrominós
-
-    for (int k = 0; k < 5; k++) {
-        Tetromino t = tetromino_table[playfield->queue[k]];
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                int color = t.shape[i + 4 * j];
-
-                if (color != 0) {
-                    al_draw_scaled_bitmap(
-                        allegro->bitmap_blocks,
-                        0,
-                        16 * (color - 1),
-                        16,
-                        16,
-                        (PLAYFIELD_X + (i + 12) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                        (PLAYFIELD_Y + (j + k * 3 + 2) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                        BLOCK_LENGTH * allegro->scale,
-                        BLOCK_LENGTH * allegro->scale,
-                        0
-                    );
-                }
-            }
-        }
-    }
-
-    // Tetrominó na "mão"
-
-    if (playfield->hand != -1) {
-        Tetromino hand_tetromino = tetromino_table[playfield->hand];
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                int color = hand_tetromino.shape[i + 4 * j];
-
-                if (color != 0) {
-                    al_draw_scaled_bitmap(
-                        allegro->bitmap_blocks,
-                        0,
-                        16 * (color - 1),
-                        16,
-                        16,
-                        (PLAYFIELD_X + (i - 5) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
-                        (PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
-                        BLOCK_LENGTH * allegro->scale,
-                        BLOCK_LENGTH * allegro->scale,
-                        0
-                    );
-                }
-            }
-        }
-    }
-}
-
-int playfield_update(Playfield *playfield, Input *input, double delta_time, int difficulty)
-{
-    // O cronômetro da subrotina é acionado em função da dificuldade
-
-    Tetromino *tetromino = &playfield->tetromino;
-
-    // Inverte o tetrominó na mão
-
-    if (input->c_pressed && playfield->toggle_hand) {
-        TetrominoType hand = playfield->hand;
-
-        if (hand == -1) {
-            playfield->hand = tetromino->type;
-            playfield_dequeue(playfield);
-        } else {
-            playfield->hand = tetromino->type;
-            *tetromino = tetromino_table[hand];
-        }
-
-        playfield->toggle_hand = 0;
-    }
-
-    int x_move = 0;
-    int rotation = 0;
-
-    Tetromino updated_tetromino = *tetromino;
-
-    // Queda instantânea
-
-    if (input->space_pressed) {
-        for (int i = 0; i < 20; i++) {
-            if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
-                *tetromino = updated_tetromino;
-                break;
-            }
-            updated_tetromino.y++;
-        }
-
-        tetromino_next(playfield, &updated_tetromino);
-        updated_tetromino = *tetromino;
-    }
-
-    // Queda rápida
-
-    if ((input->down_down && playfield->fast_fall_timer <= 0) || input->down_pressed) {
-        updated_tetromino.y++;
-
-        playfield->fast_fall_timer = FAST_FALL;
-        playfield->fall_timer = fall_time_difficulty_table[difficulty];
-
-        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
-            updated_tetromino.y--;
-        } else {
-            playfield->next_timer = NEXT_TIME;
-        }
-    }
-
-    // Queda lenta
-
-    if (playfield->fall_timer <= 0.0) {
-        updated_tetromino.y++;
-        playfield->fall_timer = fall_time_difficulty_table[difficulty];
-
-        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
-            updated_tetromino.y--;
-        } else {
-            playfield->next_timer = NEXT_TIME;
-        }
-    }
-
-    // Cheque de aderência
-
-    if (tetromino_collision_check(playfield, updated_tetromino, 0, 1)) {
-        playfield->next_timer -= delta_time;
-
-        if (playfield->next_timer <= 0) {
-            playfield->next_timer = NEXT_TIME;
-            int loss = tetromino_next(playfield, &updated_tetromino);
-
-            if (loss) {
-                return 1;
-            }
-        }
-    }
-
-    // Cheque do movimento horizontal
-
-    if ((input->left_down && playfield->horizontal_move_timer <= 0) || input->left_pressed) {
-        updated_tetromino.x--;
-        playfield->horizontal_move_timer = HOR_TIME;
-
-        x_move--;
-    }
-
-    if ((input->right_down && playfield->horizontal_move_timer <= 0) || input->right_pressed) {
-        updated_tetromino.x++;
-        playfield->horizontal_move_timer = HOR_TIME;
-
-        x_move++;
-    }
-
-    if (x_move != 0) {
-        if (tetromino_collision_check(playfield, updated_tetromino, 0, 0)) {
-            updated_tetromino.x -= x_move;
-        }
-    }
-
-    *tetromino = updated_tetromino;
-
-    // Cheque da rotação
-
-    if (input->z_pressed) {
-        tetromino_rotate_clockwise(&updated_tetromino);
-
-        rotation++;
-    }
-
-    if (input->x_pressed) {
-        tetromino_rotate_counterclockwise(&updated_tetromino);
-
-        rotation--;
-    }
-
-    // Wall kick
-
-    if (rotation) {
-        tetromino_wall_kick(playfield, updated_tetromino, rotation);
-    }
-
-    // Atualização dos cronometros
-
-    if (playfield->fall_timer >= 0) {
-        playfield->fall_timer -= delta_time;
-    }
-
-    if (playfield->horizontal_move_timer) {
-        playfield->horizontal_move_timer -= delta_time;
-    }
-
-    if (playfield->fast_fall_timer) {
-        playfield->fast_fall_timer -= delta_time;
-    }
-
-    return 0;
-}
-
-void playfield_reset(Playfield *playfield, int difficulty)
-{
-    // Limpa o tabuleiro, inicializa os cronômetros e a fila de tetrominós
-
-    *playfield = (Playfield){
-        .board = {0},
-
-        .tetromino = tetromino_table[rand() % 7],
-
-        .lines_cleared = 0,
-        .points = 0,
-
-        .fall_timer = fall_time_difficulty_table[difficulty],
-        .next_timer = 1.0,
-
-        .horizontal_move_timer = 0.0,
-        .fast_fall_timer = 0.0,
-
-        .hand = -1,
-        .toggle_hand = 1
-    };
-
-    // Inicializa a fila
-
-    for (int i = 0; i < 5; i++) {
-        playfield->queue[i] = rand() % 7;
-    }
 }
 
 GameMode pause_menu(AllegroContext *allegro, Input *input)

@@ -16,31 +16,44 @@
 #define WIDTH  1080
 #define HEIGHT 720
 
-// struct contendo as estruturas empregadas pela Allegro
+// struct contendo as estruturas empregadas pelo Allegro
 
 typedef struct AllegroContext {
+    // Módulos específicos do Allegro
+
     ALLEGRO_DISPLAY *display;
     ALLEGRO_EVENT_QUEUE *queue;
     ALLEGRO_TIMER *timer;
     ALLEGRO_EVENT event;
 
+    // Fontes
+
     ALLEGRO_FONT *font;
     ALLEGRO_FONT *font_small;
+
+    // Bitmaps empregados
 
     ALLEGRO_BITMAP *bitmap_blocks;
     ALLEGRO_BITMAP *bitmap_playfield;
     ALLEGRO_BITMAP *bitmap_keybinds;
+
+    // Parâmetros geométricos de exibição
 
     float x_offset;
     float y_offset;
 
     float scale;
 
+    // Flag de tela cheia
+
     int fullscreen;
+
+    // Flag de redesenhar
+
     int redraw;
 } AllegroContext;
 
 AllegroContext *allegro_init();                 // Inicialização dos módulos do Allegro
 void allegro_free(AllegroContext *allegro);     // Finalização dos módulos do Allegro
 
-void toggle_fullscreen(AllegroContext *allegro);
+void toggle_fullscreen(AllegroContext *allegro);    // Ativa ou desliga a tela cheia

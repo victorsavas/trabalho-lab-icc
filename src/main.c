@@ -1,10 +1,14 @@
+// Trabalho final da diciplina de ICC e Lab. de ICC
+// Professores: Matheus Machado e Fernando Osório
+// Estudantes: Victor Soares Vasconcelos (16903560) e Matheus Henriquez Buzzon (16827610)
+
 #include "allegro_context.h"
 #include "global_state.h"
 #include "game.h"
 
 int main()
 {
-    // Geração de números aleatórios
+    // Semente da geração de números aleatórios a partir do horário do sistema
 
     srand(time(NULL));
 

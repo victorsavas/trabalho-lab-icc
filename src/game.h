@@ -42,5 +42,5 @@ void game_loop(GlobalState *global, AllegroContext *allegro, Input *input);
 
 // Subrotinas dos dois "modos" do jogo: menu principal e playfield. Ao retornar, indicam qual deve ser a próxima subrotina chamada.
 
-GameMode game_main_menu(GlobalState *global, AllegroContext *allegro, Input *input);
-GameMode game_playfield(GlobalState *global, AllegroContext *allegro, Input *input);
+GameMode game_main_menu(GlobalState *global, AllegroContext *allegro, Input *input);    // Menu principal
+GameMode game_playfield(GlobalState *global, AllegroContext *allegro, Input *input);    // Tabuleiro
