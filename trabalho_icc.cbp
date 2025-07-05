@@ -45,14 +45,14 @@
 		<Unit filename="src/game_loop.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/global_state.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/global_state.h" />
 		<Unit filename="src/input.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/input.h" />
-		<Unit filename="src/leaderboard.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
