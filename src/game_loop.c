@@ -1,156 +1,56 @@
-#include "game_loop.h"
+#include "game.h"
+#include "global_state.h"
 
-typedef enum mode_e {
-    EXIT,
-    MENU,
-    GAME
-} GameMode;
-
-typedef enum tetromino_e {
-    TETROMINO_O,
-    TETROMINO_L,
-    TETROMINO_J,
-    TETROMINO_S,
-    TETROMINO_Z,
-    TETROMINO_T,
-    TETROMINO_I
-} TetrominoType;
-
-typedef struct tetromino_t {
-    TetrominoType type;
-
-    int x;
-    int y;
-
-    int shape[4][4];
-} Tetromino;
-
-const Tetromino tetromino_table[7] =
+void button_draw(AllegroContext* allegro, t_button button, int selected)
 {
-    {
-        .type = TETROMINO_O,
+    ALLEGRO_COLOR color;
 
-        .x = 5,
-        .y = 0,
+    // Determina a cor do botão
 
-        .shape = {
-            1,1,0,0,
-            1,1,0,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_L,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            0,0,1,0,
-            1,1,1,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_J,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            1,0,0,0,
-            1,1,1,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_S,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            0,1,1,0,
-            1,1,0,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_Z,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            1,1,0,0,
-            0,1,1,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_T,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            0,1,0,0,
-            1,1,1,0,
-            0,0,0,0,
-            0,0,0,0
-        }
-    },
-
-    {
-        .type = TETROMINO_I,
-
-        .x = 4,
-        .y = 0,
-
-        .shape = {
-            0,0,0,0,
-            1,1,1,1,
-            0,0,0,0,
-            0,0,0,0
-        }
+    if (selected) {
+        color = button.selected_color;
+    } else {
+        color = button.default_color;
     }
-};
 
-void game_loop(AllegroContext allegro)
+    // Corpo do botão
+
+    al_draw_filled_rectangle(
+        button.origin_x * allegro->scale + allegro->x_offset,
+        button.origin_y * allegro->scale + allegro->y_offset,
+        button.end_x * allegro->scale + allegro->x_offset,
+        button.end_y * allegro->scale + allegro->y_offset,
+        color
+    );
+
+    // Rótulo
+
+    al_draw_text(
+        allegro->font,
+        WHITE,
+        ((button.origin_x + button.end_x) / 2) * allegro->scale + allegro->x_offset,
+        ((button.origin_y + button.end_y) / 2 - 25) * allegro->scale + allegro->y_offset,
+        ALLEGRO_ALIGN_CENTER,
+        button.label
+    );
+}
+
+void game_loop(GlobalState *global, AllegroContext *allegro, Input *input)
 {
-    int redraw = 1;
-    GameMode mode = GAME;
+    // Modo do jogo
 
-    int playfield[10][20] = {0};
-    Tetromino tetromino = tetromino_table[0];
+    GameMode mode = MODE_MAIN_MENU;
 
-    ALLEGRO_COLOR red = al_map_rgb(255, 0, 0);
+    // Máquina de estados
 
-    while (mode != EXIT) {
-        al_wait_for_event(allegro.queue, &allegro.event);
-
-        if (allegro.event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            break;
-        }
-
+    while (mode) {
         switch (mode) {
-        case MENU:
+        case MODE_MAIN_MENU:
+            mode = game_main_menu(global, allegro, input);
             break;
-        case GAME:
-            al_draw_filled_rectangle(0,0,32,32,red);
+        case MODE_PLAYFIELD:
+            mode = game_playfield(global, allegro, input);
             break;
         }
-
-        al_flip_display();
     }
 }

@@ -1,1 +1,0 @@
-requer todos os arquivos do allegro compartilhados pelo professor para funcionar
