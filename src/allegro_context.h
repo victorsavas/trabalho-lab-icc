@@ -31,6 +31,11 @@ typedef struct AllegroContext {
     ALLEGRO_BITMAP *bitmap_playfield;
     ALLEGRO_BITMAP *bitmap_keybinds;
 
+    float x_offset;
+    float y_offset;
+
+    float scale;
+
     int fullscreen;
     int redraw;
 } AllegroContext;

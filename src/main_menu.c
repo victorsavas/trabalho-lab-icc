@@ -229,20 +229,20 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             // Bordas do placar
 
             al_draw_filled_rounded_rectangle(
-                WIDTH/8 - WIDTH/18,
-                HEIGHT/8,
-                WIDTH - WIDTH/8 + WIDTH/18,
-                HEIGHT - HEIGHT/8 - HEIGHT/10,
+                (WIDTH/8 - WIDTH/18) * allegro->scale + allegro->x_offset,
+                HEIGHT/8 * allegro->scale + allegro->y_offset,
+                (WIDTH - WIDTH/8 + WIDTH/18) * allegro->scale + allegro->x_offset,
+                (HEIGHT - HEIGHT/8 - HEIGHT/10) * allegro->scale + allegro->y_offset,
                 20,
                 20,
                 al_map_rgb(72, 118, 187)
             );
 
             al_draw_filled_rounded_rectangle(
-                WIDTH/7 - WIDTH/18,
-                HEIGHT/6,
-                WIDTH - WIDTH/7 + WIDTH/18,
-                HEIGHT - HEIGHT/6 - HEIGHT/10,
+                (WIDTH/7 - WIDTH/18) * allegro->scale + allegro->x_offset,
+                (HEIGHT/6) * allegro->scale + allegro->y_offset,
+                (WIDTH - WIDTH/7 + WIDTH/18) * allegro->scale + allegro->x_offset,
+                (HEIGHT - HEIGHT/6 - HEIGHT/10) * allegro->scale + allegro->y_offset,
                 20,
                 20,
                 BACKGROUND_COLOR
@@ -259,8 +259,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
                         al_draw_textf(
                             allegro->font_small,
                             WHITE,
-                            WIDTH/4 + j * WIDTH/4,
-                            HEIGHT/4 + HEIGHT/10 * i,
+                            (WIDTH/4 + j * WIDTH/4) * allegro->scale + allegro->x_offset,
+                            (HEIGHT/4 + HEIGHT/10 * i) * allegro->scale + allegro->y_offset,
                             ALLEGRO_ALIGN_CENTER,
                             "%s %06d", name, score
                         );
@@ -268,8 +268,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
                         al_draw_textf(
                             allegro->font_small,
                             WHITE,
-                            WIDTH/4 + j * WIDTH/4,
-                            HEIGHT/4 + HEIGHT/10 * i,
+                            (WIDTH/4 + j * WIDTH/4) * allegro->scale + allegro->x_offset,
+                            (HEIGHT/4 + HEIGHT/10 * i) * allegro->scale + allegro->y_offset,
                             ALLEGRO_ALIGN_CENTER,
                             "-"
                         );
@@ -282,8 +282,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             al_draw_textf(
                 allegro->font,
                 al_map_rgb(81, 179, 65),
-                WIDTH/4 + 0 * WIDTH/4,
-                HEIGHT/5,
+                (WIDTH/4 + 0 * WIDTH/4) * allegro->scale + allegro->x_offset,
+                (HEIGHT/5) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "EASY"
             );
@@ -291,8 +291,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             al_draw_textf(
                 allegro->font,
                 al_map_rgb(255, 127, 79),
-                WIDTH/4 + 1 * WIDTH/4,
-                HEIGHT/5,
+                (WIDTH/4 + 1 * WIDTH/4) * allegro->scale + allegro->x_offset,
+                (HEIGHT/5) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "NORMAL"
             );
@@ -300,8 +300,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             al_draw_textf(
                 allegro->font,
                 al_map_rgb(238, 48, 70),
-                WIDTH/4 + 2 * WIDTH/4,
-                HEIGHT/5,
+                (WIDTH/4 + 2 * WIDTH/4) * allegro->scale + allegro->x_offset,
+                (HEIGHT/5) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "HARD"
             );
@@ -311,8 +311,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             al_draw_textf(
                 allegro->font,
                 WHITE,
-                WIDTH/2,
-                HEIGHT/20,
+                (WIDTH/2) * allegro->scale + allegro->x_offset,
+                (HEIGHT/20) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "LEADERBOARD"
             );
@@ -322,8 +322,8 @@ GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, I
             al_draw_textf(
                 allegro->font,
                 WHITE,
-                WIDTH/2,
-                HEIGHT - HEIGHT/6,
+                (WIDTH/2) * allegro->scale + allegro->x_offset,
+                (HEIGHT - HEIGHT/6) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "PRESS ESCAPE TO RETURN"
             );

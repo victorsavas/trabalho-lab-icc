@@ -16,10 +16,10 @@ void button_draw(AllegroContext* allegro, t_button button, int selected)
     // Corpo do botão
 
     al_draw_filled_rectangle(
-        button.origin_x,
-        button.origin_y,
-        button.end_x,
-        button.end_y,
+        button.origin_x * allegro->scale + allegro->x_offset,
+        button.origin_y * allegro->scale + allegro->y_offset,
+        button.end_x * allegro->scale + allegro->x_offset,
+        button.end_y * allegro->scale + allegro->y_offset,
         color
     );
 
@@ -28,8 +28,8 @@ void button_draw(AllegroContext* allegro, t_button button, int selected)
     al_draw_text(
         allegro->font,
         WHITE,
-        (button.origin_x + button.end_x) / 2,
-        (button.origin_y + button.end_y) / 2 - 25,
+        ((button.origin_x + button.end_x) / 2) * allegro->scale + allegro->x_offset,
+        ((button.origin_y + button.end_y) / 2 - 25) * allegro->scale + allegro->y_offset,
         ALLEGRO_ALIGN_CENTER,
         button.label
     );

@@ -713,10 +713,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
         0,
         170,
         330,
-        PLAYFIELD_X - BLOCK_LENGTH * 5 / 16,
-        PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16,
-        PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8,
-        PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8,
+        (PLAYFIELD_X - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->x_offset,
+        (PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->y_offset,
+        (PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8) * allegro->scale,
+        (PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8) * allegro->scale,
         0
     );
 
@@ -733,10 +733,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
                     16 * (color - 1),
                     16,
                     16,
-                    PLAYFIELD_X + i * BLOCK_LENGTH,
-                    PLAYFIELD_Y + j * BLOCK_LENGTH,
-                    BLOCK_LENGTH,
-                    BLOCK_LENGTH,
+                    (PLAYFIELD_X + i * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + j * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    BLOCK_LENGTH * allegro->scale,
+                    BLOCK_LENGTH * allegro->scale,
                     0
                 );
             }
@@ -760,10 +760,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
 
             if (color != 0) {
                 al_draw_filled_rectangle(
-                    PLAYFIELD_X + (i + ghost_tetromino.x) * BLOCK_LENGTH,
-                    PLAYFIELD_Y + (j + ghost_tetromino.y) * BLOCK_LENGTH,
-                    PLAYFIELD_X + (i + ghost_tetromino.x + 1) * BLOCK_LENGTH,
-                    PLAYFIELD_Y + (j + ghost_tetromino.y + 1) * BLOCK_LENGTH,
+                    (PLAYFIELD_X + (i + ghost_tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + ghost_tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    (PLAYFIELD_X + (i + ghost_tetromino.x + 1) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + ghost_tetromino.y + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
                     al_map_rgb(39, 37, 115)
                 );
             }
@@ -783,10 +783,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
                     16 * (color - 1),
                     16,
                     16,
-                    PLAYFIELD_X + (i + playfield->tetromino.x) * BLOCK_LENGTH,
-                    PLAYFIELD_Y + (j + playfield->tetromino.y) * BLOCK_LENGTH,
-                    BLOCK_LENGTH,
-                    BLOCK_LENGTH,
+                    (PLAYFIELD_X + (i + playfield->tetromino.x) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                    (PLAYFIELD_Y + (j + playfield->tetromino.y) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                    BLOCK_LENGTH * allegro->scale,
+                    BLOCK_LENGTH * allegro->scale,
                     0
                 );
             }
@@ -798,8 +798,8 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
     al_draw_textf(
         allegro->font,
         al_map_rgb(255,255,255),
-        WIDTH - WIDTH/5,
-        HEIGHT - HEIGHT/8 - 35,
+        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
+        (HEIGHT - HEIGHT/8 - 35) * allegro->scale + allegro->y_offset,
         ALLEGRO_ALIGN_CENTER,
         "LINES:%d", playfield->lines_cleared
     );
@@ -807,8 +807,8 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
     al_draw_textf(
         allegro->font,
         al_map_rgb(255,255,255),
-        WIDTH - WIDTH/5,
-        HEIGHT - HEIGHT/8,
+        (WIDTH - WIDTH/5) * allegro->scale + allegro->x_offset,
+        (HEIGHT - HEIGHT/8) * allegro->scale + allegro->y_offset,
         ALLEGRO_ALIGN_CENTER,
         "POINTS:%06d", playfield->points
     );
@@ -829,10 +829,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
                         16 * (color - 1),
                         16,
                         16,
-                        PLAYFIELD_X + (i + 12) * BLOCK_LENGTH,
-                        PLAYFIELD_Y + (j + k * 3 + 2) * BLOCK_LENGTH,
-                        BLOCK_LENGTH,
-                        BLOCK_LENGTH,
+                        (PLAYFIELD_X + (i + 12) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                        (PLAYFIELD_Y + (j + k * 3 + 2) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                        BLOCK_LENGTH * allegro->scale,
+                        BLOCK_LENGTH * allegro->scale,
                         0
                     );
                 }
@@ -856,10 +856,10 @@ void playfield_draw(AllegroContext *allegro, Playfield *playfield)
                         16 * (color - 1),
                         16,
                         16,
-                        PLAYFIELD_X + (i - 5) * BLOCK_LENGTH,
-                        PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH,
-                        BLOCK_LENGTH,
-                        BLOCK_LENGTH,
+                        (PLAYFIELD_X + (i - 5) * BLOCK_LENGTH) * allegro->scale + allegro->x_offset,
+                        (PLAYFIELD_Y + (j + 1) * BLOCK_LENGTH) * allegro->scale + allegro->y_offset,
+                        BLOCK_LENGTH * allegro->scale,
+                        BLOCK_LENGTH * allegro->scale,
                         0
                     );
                 }
@@ -1148,10 +1148,10 @@ GameMode pause_menu(AllegroContext *allegro, Input *input)
                 0,
                 170,
                 330,
-                PLAYFIELD_X - BLOCK_LENGTH * 5 / 16,
-                PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16,
-                PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8,
-                PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8,
+                (PLAYFIELD_X - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->x_offset,
+                (PLAYFIELD_Y - BLOCK_LENGTH * 5 / 16) * allegro->scale + allegro->y_offset,
+                (PLAYFIELD_WIDTH + BLOCK_LENGTH * 5 / 8) * allegro->scale,
+                (PLAYFIELD_HEIGHT + BLOCK_LENGTH * 5 / 8) * allegro->scale,
                 0
             );
 
@@ -1197,17 +1197,18 @@ void draw_keybinds(AllegroContext *allegro, int sprite_scaling)
                 sprite_y * 48,
                 48,
                 48,
-                (j * 4.5f * sprite_scaling) + 72,
-                HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + 192,
-                2 * sprite_scaling,
-                2 * sprite_scaling, 0
+                ((j * 4.5f * sprite_scaling) + 72) * allegro->scale + allegro->x_offset,
+                (HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + 192) * allegro->scale + allegro->y_offset,
+                2 * sprite_scaling * allegro->scale,
+                2 * sprite_scaling * allegro->scale,
+                0
             );
 
             al_draw_textf(
                 allegro->font_small,
                 WHITE,
-                ((j * 4.5f * sprite_scaling) + (sprite_scaling)) + 72,
-                HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + (HEIGHT / 12) + 176,
+                (((j * 4.5f * sprite_scaling) + (sprite_scaling)) + 72) * allegro->scale + allegro->x_offset,
+                (HEIGHT/10 + (i * (sprite_scaling + HEIGHT/10)) + (HEIGHT / 12) + 176) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "%s",
                 keybind_names[sprite_y]
@@ -1215,7 +1216,7 @@ void draw_keybinds(AllegroContext *allegro, int sprite_scaling)
 
             sprite_y++; // define o botão de acordo com o sprite
 
-            if(sprite_y > 6) break;
+            if(sprite_y > 7) break;
         }
     }
 }
@@ -1254,23 +1255,19 @@ GameMode loss_screen(AllegroContext *allegro, Input *input, int points)
         if (allegro->redraw && al_is_event_queue_empty(allegro->queue)) {
             // Bordas
 
-            al_draw_filled_rounded_rectangle(
-                WIDTH/3 + WIDTH/18,
-                HEIGHT/3 + HEIGHT/15,
-                WIDTH - (WIDTH/3 + WIDTH/18),
-                HEIGHT - (HEIGHT/3 + HEIGHT/15),
-                0,
-                0,
+            al_draw_filled_rectangle(
+                (WIDTH/3 + WIDTH/18) * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/15) * allegro->scale + allegro->y_offset,
+                (WIDTH - (WIDTH/3 + WIDTH/18)) * allegro->scale + allegro->x_offset,
+                (HEIGHT - (HEIGHT/3 + HEIGHT/15)) * allegro->scale + allegro->y_offset,
                 al_map_rgb(238, 48, 70)
             );
 
-            al_draw_filled_rounded_rectangle(
-                WIDTH/3 + WIDTH/15,
-                HEIGHT/3 + HEIGHT/12,
-                WIDTH - (WIDTH/3 + WIDTH/15),
-                HEIGHT - (HEIGHT/3 + HEIGHT/12),
-                0,
-                0,
+            al_draw_filled_rectangle(
+                (WIDTH/3 + WIDTH/15) * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/12) * allegro->scale + allegro->y_offset,
+                (WIDTH - (WIDTH/3 + WIDTH/15)) * allegro->scale + allegro->x_offset,
+                (HEIGHT - (HEIGHT/3 + HEIGHT/12)) * allegro->scale + allegro->y_offset,
                 al_map_rgb(166, 38, 84)
             );
 
@@ -1279,8 +1276,8 @@ GameMode loss_screen(AllegroContext *allegro, Input *input, int points)
             al_draw_text(
                 allegro->font,
                 WHITE,
-                WIDTH/2,
-                HEIGHT/3 + HEIGHT/10,
+                (WIDTH/2) * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/10) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "GAME OVER"
             );
@@ -1288,8 +1285,8 @@ GameMode loss_screen(AllegroContext *allegro, Input *input, int points)
             al_draw_textf(
                 allegro->font,
                 WHITE,
-                WIDTH/2,
-                HEIGHT/2,
+                (WIDTH/2) * allegro->scale + allegro->x_offset,
+                (HEIGHT/2) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "SCORE: %04d", points
             );
@@ -1347,20 +1344,20 @@ GameMode get_new_highscore(GlobalState *global, AllegroContext *allegro, int poi
             allegro->redraw = 0;
 
             al_draw_filled_rounded_rectangle(
-                WIDTH/3 + WIDTH/28,
-                HEIGHT/3 + HEIGHT/15,
-                WIDTH - (WIDTH/3 + WIDTH/28),
-                HEIGHT - (HEIGHT/3 + HEIGHT/15),
+                (WIDTH/3 + WIDTH/28) * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/15) * allegro->scale + allegro->y_offset,
+                (WIDTH - (WIDTH/3 + WIDTH/28)) * allegro->scale + allegro->x_offset,
+                (HEIGHT - (HEIGHT/3 + HEIGHT/15)) * allegro->scale + allegro->y_offset,
                 0,
                 0,
                 al_map_rgb(81, 179, 65)
             );
 
             al_draw_filled_rounded_rectangle(
-                WIDTH/3 + WIDTH/23,
-                HEIGHT/3 + HEIGHT/12,
-                WIDTH - (WIDTH/3 + WIDTH/23),
-                HEIGHT - (HEIGHT/3 + HEIGHT/12),
+                (WIDTH/3 + WIDTH/23) * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/12) * allegro->scale + allegro->y_offset,
+                (WIDTH - (WIDTH/3 + WIDTH/23)) * allegro->scale + allegro->x_offset,
+                (HEIGHT - (HEIGHT/3 + HEIGHT/12)) * allegro->scale + allegro->y_offset,
                 0,
                 0,
                 al_map_rgb(23, 81, 69)
@@ -1369,8 +1366,8 @@ GameMode get_new_highscore(GlobalState *global, AllegroContext *allegro, int poi
             al_draw_textf(
                 allegro->font_small,
                 WHITE,
-                WIDTH/2,
-                HEIGHT/3 + HEIGHT/10,
+                WIDTH/2 * allegro->scale + allegro->x_offset,
+                (HEIGHT/3 + HEIGHT/10) * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "NEW HIGHSCORE! %d",
                 points
@@ -1379,8 +1376,8 @@ GameMode get_new_highscore(GlobalState *global, AllegroContext *allegro, int poi
             al_draw_textf(
                 allegro->font_small,
                 WHITE,
-                WIDTH/2,
-                HEIGHT/2,
+                WIDTH/2 * allegro->scale + allegro->x_offset,
+                HEIGHT/2 * allegro->scale + allegro->y_offset,
                 ALLEGRO_ALIGN_CENTER,
                 "NAME: %s",
                 new_entry.name

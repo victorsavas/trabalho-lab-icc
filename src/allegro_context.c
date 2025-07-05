@@ -14,6 +14,7 @@ AllegroContext *allegro_init()
     al_init_acodec_addon();
 
     // Cria uma janela com as dimensões especificadas
+    al_set_new_display_flags(ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
     ALLEGRO_DISPLAY *display = al_create_display(WIDTH, HEIGHT);
 
     // Cria uma fila de eventos para tratar interações do usuário e um temporizador para controle de FPS
@@ -80,6 +81,10 @@ AllegroContext *allegro_init()
         .bitmap_playfield = bitmap_playfield,
         .bitmap_keybinds  = bitmap_keybinds,
 
+        .x_offset = 0,
+        .y_offset = 0,
+        .scale = 1,
+
         .fullscreen = 0,
         .redraw     = 0
     };
@@ -108,11 +113,53 @@ void allegro_free(AllegroContext *allegro)
     free(allegro);
 }
 
+void resize_window(AllegroContext *allegro)
+{
+    int width = al_get_display_width(allegro->display);
+    int height = al_get_display_height(allegro->display);
+
+    float ratio = (float)width / (float)height;
+
+    float x_offset;
+    float y_offset;
+
+    float scale;
+
+    if (ratio >= (float)WIDTH / (float)HEIGHT) {
+        scale = (float)height / (float)HEIGHT;
+
+        x_offset = ((float)width - (float)WIDTH * scale) / 2.0;
+        y_offset = 0.0;
+    } else {
+        scale = (float)width / (float)HEIGHT;
+
+        x_offset = 0;
+        y_offset = ((float)height - (float)HEIGHT * scale) / 2.0;
+    }
+
+    allegro->scale = scale;
+
+    allegro->x_offset = x_offset;
+    allegro->y_offset = y_offset;
+
+    ALLEGRO_FONT *font = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 50 * scale, 0);
+    ALLEGRO_FONT *font_small = al_load_ttf_font("../../fontes/Jersey15-Regular.ttf", 35 * scale, 0);
+
+    if (font != NULL) {
+        al_destroy_font(allegro->font);
+        allegro->font = font;
+    }
+
+    if (font_small != NULL) {
+        al_destroy_font(allegro->font_small);
+        allegro->font_small = font_small;
+    }
+}
 
 void toggle_fullscreen(AllegroContext *allegro)
 {
     if(allegro->fullscreen){
-        al_set_new_display_flags(ALLEGRO_WINDOWED);
+        al_set_new_display_flags(ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
 
         allegro->fullscreen = 0;
     } else {
@@ -130,4 +177,6 @@ void toggle_fullscreen(AllegroContext *allegro)
     al_register_event_source(allegro->queue, al_get_display_event_source(allegro->display));
     al_register_event_source(allegro->queue, al_get_timer_event_source(allegro->timer));
     al_register_event_source(allegro->queue, al_get_keyboard_event_source());
+
+    resize_window(allegro);
 }
