@@ -56,8 +56,8 @@ typedef struct Playfield {
 
     TetrominoType queue[5];         // Fila dos índices próximos cinco tetrominós
 
-    TetrominoType hand;             // Índice do tetrominó na mão
-    int toggle_hand;                // Flag indicando que já se alternou o tetrominó na mão.
+    TetrominoType hand;             // Índice do tetrominó armazenado
+    int toggle_hand;                // Bandeira indicando se é possível armazenar o tetrominó ativo
 } Playfield;
 
 // Tabela contendo cada tetrominó, em sua posição relativa inicial no tabuleiro.

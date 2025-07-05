@@ -3,7 +3,7 @@
 
 // Subrotina subordinada de toggle_fullscreen() que altera os parâmetros de posição e tamanho dos elementos na tela
 
-static void resize_window(AllegroContext *allegro)
+static void resize_window(AllegroContext *allegro);
 
 // Implementação das subrotinas
 
