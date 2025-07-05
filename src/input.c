@@ -2,8 +2,9 @@
 
 Input *input_init()
 {
-    Input *input;
+    // Inicialização com calloc para zerar os campos
 
+    Input *input;
     input = calloc(1, sizeof(*input));
 
     return input;
@@ -30,6 +31,7 @@ void input_pressed_flush(Input *input)
     input->c_pressed     = 0;
 
     input->escape_pressed = 0;
+    input->f4_pressed = 0;
 }
 
 void input_update(AllegroContext *allegro, Input *input)
@@ -76,6 +78,10 @@ void input_update(AllegroContext *allegro, Input *input)
 
         case ALLEGRO_KEY_ESCAPE:
             input->escape_pressed = 1;
+            break;
+
+        case ALLEGRO_KEY_F4:
+            input->f4_pressed = 1;
             break;
         }
     }

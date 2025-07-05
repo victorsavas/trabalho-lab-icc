@@ -2,17 +2,30 @@
 #include "game.h"
 #include "global_state.h"
 
-int show_leaderboard(AllegroContext *allegro, Input *input);
+// Subrotina subordinada de game_main_menu. Mostra o placar na tela.
 
-GameMode game_main_menu(AllegroContext *allegro, Input* input)
+static GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, Input *input);
+
+// Implementação das subrotinas
+
+GameMode game_main_menu(GlobalState *global, AllegroContext *allegro, Input* input)
 {
-    GameMode mode = MODE_MAIN_MENU;
+    // Variáveis para o cálculo do tempo delta_time entre cada frame
 
     double current_time;
     double last_time = al_get_time();
     double delta_time;
 
+    // Índice do botão selecionado
+
+    // 0: BOTÃO EASY
+    // 1: BOTÃO NORMAL
+    // 2: BOTÃO HARD
+    // 3: BOTÃO LEADERBOARD
+
     int selected = 0;
+
+    // Botões de dificuldade
 
     t_button difficulty_button[3] = {
         {
@@ -55,7 +68,9 @@ GameMode game_main_menu(AllegroContext *allegro, Input* input)
         }
     };
 
-    t_button other_button = {
+    // Botão do placar
+
+    t_button leaderboard_button = {
         .origin_x = WIDTH/5 + WIDTH/10,
         .origin_y = HEIGHT - HEIGHT/5,
 
@@ -68,19 +83,35 @@ GameMode game_main_menu(AllegroContext *allegro, Input* input)
         .selected_color = al_map_rgb(72, 118, 187)
     };
 
-    ALLEGRO_COLOR black = al_map_rgb(0, 0, 0);
+    // Loop do menu principal
 
-    while (mode == MODE_MAIN_MENU) {
+    while (1) {
+        // Recebe o próximo evento da fila e recebe as entradas do teclado
+
         al_wait_for_event(allegro->queue, &allegro->event);
         input_update(allegro, input);
+
+        // Fecha o jogo
 
         if (allegro->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE || input->escape_pressed) {
             return MODE_EXIT;
         }
 
+        // Lógica de cada frame
+
         if (allegro->event.type == ALLEGRO_EVENT_TIMER) {
+            // Cálculo do delta_time
+
             current_time = al_get_time();
             delta_time = current_time - last_time;
+
+            // Fullscreen
+
+            if (input->f4_pressed) {
+                toggle_fullscreen(allegro);
+            }
+
+            // Move a seleção do botão
 
             if (input->up_pressed) {
                 if (selected == 3) {
@@ -101,17 +132,27 @@ GameMode game_main_menu(AllegroContext *allegro, Input* input)
                 }
             }
 
+            // Pressiona o botão selecionado
+
             if (input->space_pressed || input->z_pressed || input->x_pressed) {
                 if (selected != 3) {
-                    // Seleciona a respectiva dificuldade
+                    // Seleciona a dificuldade e altera o modo para playfield
 
                     input_pressed_flush(input);
-                    difficulty = selected;
+                    global->selected_difficulty = selected;
                     return MODE_PLAYFIELD;
                 } else {
-                    show_leaderboard(allegro, input);
+                    // Exibe o placar na tela
+
+                    GameMode mode = show_leaderboard(global->leaderboard, allegro, input);
+
+                    if (mode == MODE_EXIT) {
+                        return MODE_EXIT;
+                    }
                 }
             }
+
+            // Indica que deve-se redesenhar a tela, atualiza as entradas de teclado e registra o tempo do frame
 
             input_pressed_flush(input);
 
@@ -121,13 +162,19 @@ GameMode game_main_menu(AllegroContext *allegro, Input* input)
         }
 
         if (allegro->redraw && al_is_event_queue_empty(allegro->queue)) {
+            // Limpa o fundo
+
             al_clear_to_color(BACKGROUND_COLOR);
+
+            // Desenha os botões
 
             for (int i = 0; i < 3; i++) {
                 button_draw(allegro, difficulty_button[i], selected == i);
             }
 
-            button_draw(allegro, other_button, selected == 3);
+            button_draw(allegro, leaderboard_button, selected == 3);
+
+            // Redesenha a tela
 
             al_flip_display();
             allegro->redraw = 0;
@@ -135,25 +182,51 @@ GameMode game_main_menu(AllegroContext *allegro, Input* input)
     }
 }
 
-int show_leaderboard(AllegroContext *allegro, Input *input)
+GameMode show_leaderboard(t_leaderboard *leaderboard, AllegroContext *allegro, Input *input)
 {
+    // Loop do placar
+
     while (1) {
+        // Recebe o próximo evento da fila e recebe as entradas do teclado
+
         al_wait_for_event(allegro->queue, &allegro->event);
         input_update(allegro, input);
 
+        // Retorna ao menu principal caso ESCAPE seja pressionado
+
         if (input->escape_pressed) {
-            return 0;
+            input_pressed_flush(input);
+            return MODE_MAIN_MENU;
         }
 
+        if (allegro->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+            return MODE_EXIT;
+        }
+
+        // Lógica de cada frame
+
         if (allegro->event.type == ALLEGRO_EVENT_TIMER) {
+
+            // Fullscreen
+
+            if (input->f4_pressed) {
+                toggle_fullscreen(allegro);
+            }
+
+            // Atualiza as entradas e indica que deve-se redesenhar atela
+
             input_pressed_flush(input);
             allegro->redraw = 1;
         }
 
-        if (allegro->redraw) {
+        if (allegro->redraw && al_is_event_queue_empty(allegro->queue)) {
             allegro->redraw = 0;
 
-            al_clear_to_color(BACKGROUND_COLOR);  // Limpa a tela com uma cor escura
+            // Limpa o fundo
+
+            al_clear_to_color(BACKGROUND_COLOR);
+
+            // Bordas do placar
 
             al_draw_filled_rounded_rectangle(
                 WIDTH/8 - WIDTH/18,
@@ -175,10 +248,12 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
                 BACKGROUND_COLOR
             );
 
+            // Desenha as pontuações salvas
+
             for(int j=0; j<DIFFICULTY_LEVELS; j++){
                 for(int i=0; i<TOP_RANKING; i++){
-                    char *name = difficulty_entries[j].entries[i].name;
-                    int score = difficulty_entries[j].entries[i].score;
+                    char *name = leaderboard[j].entries[i].name;
+                    int score = leaderboard[j].entries[i].score;
 
                     if (score != 0) {
                         al_draw_textf(
@@ -201,6 +276,8 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
                     }
                 }
             }
+
+            // Nomes das dificuldades
 
             al_draw_textf(
                 allegro->font,
@@ -229,6 +306,8 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
                 "HARD"
             );
 
+            // Título do placar
+
             al_draw_textf(
                 allegro->font,
                 WHITE,
@@ -237,6 +316,8 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
                 ALLEGRO_ALIGN_CENTER,
                 "LEADERBOARD"
             );
+
+            // Mensagem informando como retornar ao menu principal
 
             al_draw_textf(
                 allegro->font,
@@ -247,7 +328,11 @@ int show_leaderboard(AllegroContext *allegro, Input *input)
                 "PRESS ESCAPE TO RETURN"
             );
 
-            al_flip_display(); // Atualiza a tela com o que foi desenhado
+            // Atualiza a tela com o que foi desenhado
+
+            al_flip_display();
         }
     }
+
+    return MODE_EXIT;
 }

@@ -1,18 +1,19 @@
 #include "game.h"
 #include "global_state.h"
 
-int difficulty = 0;
-t_topfive_leaderboard difficulty_entries[DIFFICULTY_LEVELS] = {0};
-
 void button_draw(AllegroContext* allegro, t_button button, int selected)
 {
     ALLEGRO_COLOR color;
+
+    // Determina a cor do botão
 
     if (selected) {
         color = button.selected_color;
     } else {
         color = button.default_color;
     }
+
+    // Corpo do botão
 
     al_draw_filled_rectangle(
         button.origin_x,
@@ -21,6 +22,8 @@ void button_draw(AllegroContext* allegro, t_button button, int selected)
         button.end_y,
         color
     );
+
+    // Rótulo
 
     al_draw_text(
         allegro->font,
@@ -32,26 +35,22 @@ void button_draw(AllegroContext* allegro, t_button button, int selected)
     );
 }
 
-void game_loop(AllegroContext *allegro, Input *input)
+void game_loop(GlobalState *global, AllegroContext *allegro, Input *input)
 {
+    // Modo do jogo
+
     GameMode mode = MODE_MAIN_MENU;
 
-    int error_code = read_leaderboard_file();
-
-    if (error_code) {
-        return;
-    }
+    // Máquina de estados
 
     while (mode) {
         switch (mode) {
         case MODE_MAIN_MENU:
-            mode = game_main_menu(allegro, input);
+            mode = game_main_menu(global, allegro, input);
             break;
         case MODE_PLAYFIELD:
-            mode = game_playfield(allegro, input);
+            mode = game_playfield(global, allegro, input);
             break;
         }
     }
-
-    save_leaderboard_to_file();
 }

@@ -31,8 +31,11 @@ typedef struct AllegroContext {
     ALLEGRO_BITMAP *bitmap_playfield;
     ALLEGRO_BITMAP *bitmap_keybinds;
 
+    int fullscreen;
     int redraw;
 } AllegroContext;
 
-AllegroContext *allegro_init();
-void allegro_free(AllegroContext *allegro);
+AllegroContext *allegro_init();                 // Inicialização dos módulos do Allegro
+void allegro_free(AllegroContext *allegro);     // Finalização dos módulos do Allegro
+
+void toggle_fullscreen(AllegroContext *allegro);
