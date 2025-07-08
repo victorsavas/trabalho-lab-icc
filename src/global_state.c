@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include "global_state.h"
 

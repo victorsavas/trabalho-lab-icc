@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "leaderboard.h"
 
 int read_leaderboard_file(t_leaderboard *leaderboard)

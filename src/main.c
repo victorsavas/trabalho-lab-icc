@@ -2,6 +2,7 @@
 // Professores: Matheus Machado e Fernando Osório
 // Estudantes: Victor Soares Vasconcelos (16903560) e Matheus Henriquez Buzzon (16827610)
 
+#include <stdio.h>
 #include "allegro_context.h"
 #include "global_state.h"
 #include "game.h"
