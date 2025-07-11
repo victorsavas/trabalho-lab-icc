@@ -24,7 +24,7 @@ typedef struct t_leaderboard {
 
 // Subrotinas relativas ao placar
 
-int read_leaderboard_file(t_leaderboard *leaderboard);      // Ler arquivo do placar para a memória
+void read_leaderboard_file(t_leaderboard *leaderboard);      // Ler arquivo do placar para a memória
 int save_leaderboard_to_file(t_leaderboard *leaderboard);   // Salvar o placar em arquivo
 
 void save_highscore(t_leaderboard *leaderboard, t_leaderboard_entry new_entry);     // Adicionar novo recorde ao placar

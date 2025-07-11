@@ -464,7 +464,12 @@ int playfield_update(Playfield *playfield, Input *input, double delta_time, int 
             updated_tetromino.y++;
         }
 
-        tetromino_next(playfield, &updated_tetromino);
+        int loss = tetromino_next(playfield, &updated_tetromino);
+
+        if (loss) {
+            return 1;
+        }
+
         updated_tetromino = *tetromino;
     }
 
@@ -890,7 +895,7 @@ int playfield_clear_contiguous_lines(Playfield *playfield)
 
     // Verificando se há linhas preenchidas
 
-    int y_0;
+    int y_0 = -1;
 
     for (int y = 19; y >= 0; y--) {
         int x;
@@ -978,7 +983,7 @@ int tetromino_next(Playfield *playfield, Tetromino *updated_tetromino)
 
     *updated_tetromino = *tetromino;
 
-    if (tetromino_collision_check(playfield, playfield->tetromino, 0, 0)) {
+    if (tetromino_collision_check(playfield, *tetromino, 0, 0)) {
         return 1;
     }
 

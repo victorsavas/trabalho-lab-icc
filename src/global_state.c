@@ -13,12 +13,7 @@ GlobalState *global_init()
 
     // Carrega o placar
 
-    int error_code = read_leaderboard_file(global->leaderboard);
-
-    if (error_code) {
-        free(global);
-        return NULL;
-    }
+    read_leaderboard_file(global->leaderboard);
 
     return global;
 }

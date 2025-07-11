@@ -3,10 +3,10 @@
 #include <string.h>
 #include "leaderboard.h"
 
-int read_leaderboard_file(t_leaderboard *leaderboard)
+void read_leaderboard_file(t_leaderboard *leaderboard)
 {
     if (leaderboard == NULL) {
-        return 1;
+        return;
     }
 
     // Abre o arquivo do placar
@@ -15,17 +15,10 @@ int read_leaderboard_file(t_leaderboard *leaderboard)
 
     file = fopen("leaderboard.bin", "rb+");
 
+    // Arquivo não encontrado, placar vazio
+
     if(file == NULL){
-        file = fopen("leaderboard.bin", "wb");
-
-        // Caso não exista arquivo do placar e não seja possível criar um novo, o jogo é encerrado prematuramente
-
-        if(file == NULL){
-            return 1;
-        }
-
-        fclose(file);
-        return 0;
+        return;
     }
 
     // Leitura do arquivo
@@ -33,14 +26,12 @@ int read_leaderboard_file(t_leaderboard *leaderboard)
     for(int i=0; i<DIFFICULTY_LEVELS; i++){
             if(fread(leaderboard[i].entries, sizeof(t_leaderboard_entry), TOP_RANKING, file) != TOP_RANKING){
                 fclose(file);
-                return 0;
+                return;
             }
     }
 
     // Fechamento do arquivo
     fclose(file);
-
-    return 0;
 }
 
 int save_leaderboard_to_file(t_leaderboard *leaderboard)
